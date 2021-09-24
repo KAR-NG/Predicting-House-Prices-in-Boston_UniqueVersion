@@ -1,0 +1,56 @@
+---
+title: "Boston House Prices Analysis"
+author: "Kar Ng"
+date: "2021"
+output: 
+  github_document:
+    toc: yes
+    toc_depth: 3
+always_allow_html: yes
+    
+---
+
+
+## 1 R PACKAGES
+
+```{r, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(skimr)
+library(caret)
+library(MASS)
+
+```
+
+## 2 INTRODUCTION
+
+This project uses a public dataset named "Boston" from the R package - MASS. This dataset studies the effects of a range of variables on median house prices in Boston near late 70s, United States. 
+
+I will statistically analyse the dataset with machine learning algorithms to find out the effects of each variables on the median house prices and build a model that correctly predict the median house price.
+
+
+## 3 DATA IMPORT
+
+```{r}
+
+Boston
+
+```
+
+
+## 4 EXPLORATORY DATA ANALYSIS (EDA)
+
+
+
+
+
+## 
+
+
+## REFERENCE 
+
+Harrison, D. and Rubinfeld, D.L. (1978) Hedonic prices and the demand for clean air. J. Environ. Economics and Management 5, 81–102.
+
+Belsley D.A., Kuh, E. and Welsch, R.E. (1980) Regression Diagnostics. Identifying Influential Data and Sources of Collinearity. New York: Wiley.
+
+
+
