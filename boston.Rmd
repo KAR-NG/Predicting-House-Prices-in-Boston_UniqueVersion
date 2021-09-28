@@ -32,6 +32,8 @@ library(glmnet)
 library(car)
 library(corrplot)
 library(mgcv)
+library(randomForest)
+library(doParallel)
 
 # R setting
 
@@ -176,9 +178,7 @@ ggplot(bos2, aes(x = result, y = medv, colour = variable)) +
   theme_bw() +
   theme(legend.position = "none",
         plot.title = element_text(face = "bold", size = 14, hjust = 0.5, vjust = 2),
-        strip.text = element_text(size = 10),
-        axis.title.x = element_text(margin = margin(10, 0, 0 ,0)),
-        axis.title.y = element_text(margin = margin(0, 10, 0, 0))) +
+        strip.text = element_text(size = 10)) +
   geom_smooth(se = F) +
   labs(x = "Variables",
        y = "Median House Price, /$1000",
@@ -204,8 +204,10 @@ Insights:
 * Tax has a negative impact  
 * "zn" - the proportion of residential land zoned for lots has positive impact  
 
+Last but not least, the relationship between the dependent variable "medv" and each of the independent variables is not linear. 
 
-## 5 Model building
+
+## 5 Model Building
 
 ### 5.1 Preliminary Variable Selection 
 
@@ -214,6 +216,7 @@ This section is meant to select the variables that is related to the topic of th
 However, since the aim of this project is to analyse each and every single variables in the dataset and their relatability to median house prices, represented by "medv", I will keep all variables. 
 
 ```{r}
+
 names(Boston)
 
 ```
@@ -328,9 +331,14 @@ vif(model)
 ```
 
 
-### 5.5
+### 5.5 Assumption tests of Multiple Linear Regressions
+
+Following diagnostic plots show that:
+
+* The 
 
 ```{r}
+par(nfrow = c(2,2))
 
 plot(model)
 
@@ -339,19 +347,288 @@ plot(model)
 
 
 
+### 5.6 Lasso Regression
 
-### 5.5 Lasso
-
-Lasso might not be ideal because linear regression assumptions are violated such as the   but can be built and used as a baesline model for comparison. 
-
+Lasso might not be ideal because linear regression assumptions are violated but can be built and used as a baesline model for comparison of the testing results. Generally, lasso is selected because there is multicollinearity issue within the dataset and lasso can help to select 1 variable from the highly correlated group. A drawback is that the removal of correlated group depends on the best selected lambda. 
 
 
+```{r, warning=FALSE}
+set.seed(123)
+
+model_lasso <- train(medv ~., data = train.data,
+                     method = "glmnet",
+                     trControl = trainControl(method = "repeatedcv",
+                                              number = 10,
+                                              repeats = 3),
+                     tuneGrid = data.frame(alpha = 1,
+                                           lambda = 10^seq(-3, 3, length = 100)))
+```
+
+Identified best lambda is 0.0248.
+
+```{r}
+model_lasso$bestTune
+
+```
+
+
+```{r}
+# Predictions 
+
+predictions_lasso <- model_lasso %>% predict(test.data)
+
+# Performance check
+
+data.frame(
+RMSE(predictions_lasso, test.data$medv),
+R2(predictions_lasso, test.data$medv)
+)
+```
+
+### 5.6 Elastic Net 
+
+Trying on the relative of Lasso. 
+
+```{r, warning=FALSE}
+set.seed(123)
+
+model_elas <- train(medv ~., data = train.data,
+                     method = "glmnet",
+                     trControl = trainControl(method = "repeatedcv",
+                                              number = 10,
+                                              repeats = 3),
+                     tuneLength = 10)
+```
+
+
+```{r}
+model_elas$bestTune
+
+```
+
+```{r}
+# predictions
+
+predictions_elas <- model_elas %>% predict(test.data)
+
+
+# Performance
+
+RMSE(predictions_elas, test.data$medv)
+R2(predictions_elas, test.data$medv)
+
+```
 
 
 
 
 
-## 6 Model Productionisation
+### 5.7 K-Nearest Neighbour (KNN)
+
+It is the first non-parametric algorithm that can be used for dataset that cannot fulfill the linearity assumptions of regression, additionally, this method is immune to multicollinearity.
+
+```{r}
+set.seed(123)
+
+model_knn <- train(medv ~., train.data,
+                   method = "knn",
+                   trControl = trainControl(method = "repeatedcv", 
+                                            number = 10,
+                                            repeats = 3),
+                   tuneLength = 100)
+
+```
+
+The best K value is 5.
+
+```{r}
+model_knn$bestTune
+
+```
+
+It can be seen that when K = 5, this KNN algorithm has the lowest RMSE.
+
+```{r}
+plot(model_knn)
+
+```
+
+Test the perdiction performance of KNN algorithm: 
+
+```{r}
+# Prediction
+
+predictions_knn <- model_knn %>% predict(test.data)
+
+# Model performance
+
+RMSE(predictions_knn, test.data$medv)
+R2(predictions_knn, test.data$medv)  
+
+```
+
+
+### 5.8 Decision Tree
+
+
+```{r, warning=FALSE}
+
+set.seed(123)
+
+model_DT <- train(medv ~., data = train.data, 
+                  trControl = trainControl(method = "repeatedcv",
+                                           number = 10,
+                                           repeats = 3),
+                  method = "rpart",
+                  tuneLength = 10
+                  )
+
+```
+
+A complexity parameter (cp) of 0.00814 is recommended as the optimum cp that maximized the cross-validation accuracy. 
+
+```{r}
+model_DT$bestTune
+
+```
+
+```{r}
+plot(model_DT)
+
+```
+
+```{r}
+
+# Model Accuracy
+
+predictions_DT <- model_DT %>% predict(test.data)
+
+# Model performance
+
+RMSE(predictions_DT, test.data$medv)
+R2(predictions_DT, test.data$medv)
+
+
+
+```
+
+Following decision tree can help make decisions. 
+
+```{r, fig.width=6, fig.height=7}
+par(xpd = NA)
+plot(model_DT$finalModel)
+text(model_DT$finalModel, digits = 3, col = "brown")
+
+```
+
+### 5.9 Random Forest 
+
+A random forest is ran in this section. It is a method that build many trees and grab an overall averaged result. Each tree is trained separately on a bag of random data subset. Trees are independently from each other.  
+
+It is generally has better predictive performance than single decision tree.
+
+```{r, warning=FALSE}
+set.seed(123)
+
+Cl <- makePSOCKcluster(5)
+registerDoParallel(Cl)
+
+# build the model
+start.time <- proc.time()
+
+model_RF <- train(medv ~., data = train.data,
+                  trControl = trainControl(method = "repeatedcv",
+                                           number = 10,
+                                           repeats = 3),
+                  method = "rf",
+                  importance = TRUE)
+
+stop.time <- proc.time()
+run.time <- start.time - stop.time
+print(run.time)
+
+```
+
+```{r}
+varImp(model_RF)
+
+```
+
+When "rm" is removed, the MSE (mean squared error) will be increased by 55.6% followed by "lstat" and "dis". 
+
+```{r}
+Imp_table <- data.frame(importance(model_RF$finalModel))
+Imp_table %>% arrange(desc(X.IncMSE)) %>% rename(X.IncMSE_percent = X.IncMSE)
+
+```
+
+```{r}
+# Predictions
+
+predictions_RF <- model_RF %>% predict(test.data)
+
+# Model performance
+
+RMSE(predictions_RF, test.data$medv)
+R2(predictions_RF, test.data$medv)
+
+
+```
+
+```{r}
+plot(varImp(model_RF))
+
+```
+
+
+
+### 5.10 Model Comparison
+
+```{r, fig.width=10}
+
+library(tidytext)
+
+# set up df
+
+model <- c("Lasso", "Elastic_Net", "KNN", "Decision_Tree", "Random_Forest")
+RMSE_Value <- c(RMSE(predictions_lasso, test.data$medv),
+               RMSE(predictions_elas, test.data$medv),
+               RMSE(predictions_knn, test.data$medv),
+               RMSE(predictions_DT, test.data$medv),
+               RMSE(predictions_RF, test.data$medv)
+               )
+R2_value <- c(R2(predictions_lasso, test.data$medv),
+              R2(predictions_elas, test.data$medv),
+              R2(predictions_knn, test.data$medv),
+              R2(predictions_DT, test.data$medv),
+              R2(predictions_RF, test.data$medv)
+              )
+
+df5.10 <- data.frame(model, RMSE_Value, R2_value)
+df5.10 <- df5.10 %>% 
+  pivot_longer(c(2:3),
+               names_to = "metrics",
+               values_to = "result") %>% 
+  mutate(model = reorder_within(x = model, by = result, within = metrics))
+
+
+# ggplot
+
+ggplot(df5.10, aes(x = fct_reorder(model, -result), y = result, fill = model)) +
+  geom_bar(stat = "identity", width = 0.6) +
+  facet_wrap(~ metrics, scale = "free") +
+  scale_x_reordered() +
+  geom_text(aes(label = round(result,2), vjust = 2)) +
+  theme(legend.position = "none")
+
+```
+
+It is clearly seen than random forest has the highest R2 at 90% with the lowest RMSE at 2.79. It is recognized the best model.
+
+
+
+## 6 Model for Production
+
 
 
 ## 7 Conclusion

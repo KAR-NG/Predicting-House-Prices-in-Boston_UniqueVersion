@@ -14,7 +14,7 @@ Kar Ng
     -   [4.1 Distribution Study](#41-distribution-study)
     -   [4.2 Outliers Detection](#42-outliers-detection)
     -   [4.3 Relationships](#43-relationships)
--   [5 Model building](#5-model-building)
+-   [5 Model Building](#5-model-building)
     -   [5.1 Preliminary Variable
         Selection](#51-preliminary-variable-selection)
     -   [5.2 Train-test split](#52-train-test-split)
@@ -22,9 +22,15 @@ Kar Ng
         (MLR)](#53-multiple-linear-regression-mlr)
     -   [5.4 Multicollinearity
         Detection](#54-multicollinearity-detection)
-    -   [5.5](#55)
-    -   [5.5 Lasso](#55-lasso)
--   [6 Model Productionisation](#6-model-productionisation)
+    -   [5.5 Assumption tests of Multiple Linear
+        Regressions](#55-assumption-tests-of-multiple-linear-regressions)
+    -   [5.6 Lasso Regression](#56-lasso-regression)
+    -   [5.6 Elastic Net](#56-elastic-net)
+    -   [5.7 K-Nearest Neighbour (KNN)](#57-k-nearest-neighbour-knn)
+    -   [5.8 Decision Tree](#58-decision-tree)
+    -   [5.9 Random Forest](#59-random-forest)
+    -   [5.10 Model Comparison](#510-model-comparison)
+-   [6 Model for Production](#6-model-for-production)
 -   [7 Conclusion](#7-conclusion)
 -   [8 LEGALITY](#8-legality)
 -   [9 REFERENCE](#9-reference)
@@ -50,6 +56,8 @@ library(glmnet)
 library(car)
 library(corrplot)
 library(mgcv)
+library(randomForest)
+library(doParallel)
 
 # R setting
 
@@ -79,28 +87,28 @@ data("Boston", package = "MASS")
 sample_n(Boston, 10)
 ```
 
-    ##        crim zn indus chas   nox    rm  age    dis rad tax ptratio  black lstat
-    ## 1   0.13158  0 10.01    0 0.547 6.176 72.5 2.7301   6 432    17.8 393.30 12.04
-    ## 2   0.03659 25  4.86    0 0.426 6.302 32.2 5.4007   4 281    19.0 396.90  6.72
-    ## 3   4.42228  0 18.10    0 0.584 6.003 94.5 2.5403  24 666    20.2 331.29 21.32
-    ## 4   2.14918  0 19.58    0 0.871 5.709 98.5 1.6232   5 403    14.7 261.95 15.79
-    ## 5  10.83420  0 18.10    0 0.679 6.782 90.8 1.8195  24 666    20.2  21.57 25.79
-    ## 6   6.28807  0 18.10    0 0.740 6.341 96.4 2.0720  24 666    20.2 318.01 17.79
-    ## 7   0.06263  0 11.93    0 0.573 6.593 69.1 2.4786   1 273    21.0 391.99  9.67
-    ## 8   9.92485  0 18.10    0 0.740 6.251 96.6 2.1980  24 666    20.2 388.52 16.44
-    ## 9   1.65660  0 19.58    0 0.871 6.122 97.3 1.6180   5 403    14.7 372.80 14.10
-    ## 10  5.66998  0 18.10    1 0.631 6.683 96.8 1.3567  24 666    20.2 375.33  3.73
+    ##       crim zn indus chas   nox    rm  age    dis rad tax ptratio  black lstat
+    ## 1  0.15098  0 10.01    0 0.547 6.021 82.6 2.7474   6 432    17.8 394.51 10.30
+    ## 2  0.18337  0 27.74    0 0.609 5.414 98.3 1.7554   4 711    20.1 344.05 23.97
+    ## 3  9.72418  0 18.10    0 0.740 6.406 97.2 2.0651  24 666    20.2 385.96 19.52
+    ## 4  1.22358  0 19.58    0 0.605 6.943 97.4 1.8773   5 403    14.7 363.43  4.59
+    ## 5  3.16360  0 18.10    0 0.655 5.759 48.2 3.0665  24 666    20.2 334.40 14.13
+    ## 6  4.66883  0 18.10    0 0.713 5.976 87.9 2.5806  24 666    20.2  10.48 19.01
+    ## 7  0.10959  0 11.93    0 0.573 6.794 89.3 2.3889   1 273    21.0 393.45  6.48
+    ## 8  0.02498  0  1.89    0 0.518 6.540 59.7 6.2669   1 422    15.9 389.96  8.65
+    ## 9  0.21977  0  6.91    0 0.448 5.602 62.0 6.0877   3 233    17.9 396.90 16.20
+    ## 10 0.62739  0  8.14    0 0.538 5.834 56.5 4.4986   4 307    21.0 395.62  8.47
     ##    medv
-    ## 1  21.2
-    ## 2  24.8
-    ## 3  19.1
-    ## 4  19.4
-    ## 5   7.5
-    ## 6  14.9
-    ## 7  22.4
-    ## 8  12.6
-    ## 9  21.5
-    ## 10 50.0
+    ## 1  19.2
+    ## 2   7.0
+    ## 3  17.1
+    ## 4  41.3
+    ## 5  19.9
+    ## 6  12.7
+    ## 7  22.0
+    ## 8  16.5
+    ## 9  19.4
+    ## 10 19.9
 
 ### 3.2 Data Description
 
@@ -940,9 +948,7 @@ ggplot(bos2, aes(x = result, y = medv, colour = variable)) +
   theme_bw() +
   theme(legend.position = "none",
         plot.title = element_text(face = "bold", size = 14, hjust = 0.5, vjust = 2),
-        strip.text = element_text(size = 10),
-        axis.title.x = element_text(margin = margin(10, 0, 0 ,0)),
-        axis.title.y = element_text(margin = margin(0, 10, 0, 0))) +
+        strip.text = element_text(size = 10)) +
   geom_smooth(se = F) +
   labs(x = "Variables",
        y = "Median House Price, /$1000",
@@ -970,7 +976,10 @@ Insights:
 -   “zn” - the proportion of residential land zoned for lots has
     positive impact
 
-## 5 Model building
+Last but not least, the relationship between the dependent variable
+“medv” and each of the independent variables is not linear.
+
+## 5 Model Building
 
 ### 5.1 Preliminary Variable Selection
 
@@ -1159,11 +1168,21 @@ vif(model)
 ```
 
     ##     crim       zn    indus     chas      nox       rm      age      dis 
-    ## 1.868223 2.375233 4.003021 1.083288 4.373215 1.945879 3.086447 4.059580 
+    ## 1.757523 2.380783 4.349575 1.100985 4.349143 1.880637 2.990620 4.156674 
     ##      rad      tax  ptratio    black    lstat 
-    ## 7.052928 8.419109 1.842011 1.377644 3.023860
+    ## 7.221891 9.277121 1.881753 1.361474 2.854826
 
-### 5.5
+### 5.5 Assumption tests of Multiple Linear Regressions
+
+Following diagnostic plots show that:
+
+-   The
+
+``` r
+par(nfrow = c(2,2))
+```
+
+    ## Warning in par(nfrow = c(2, 2)): "nfrow" is not a graphical parameter
 
 ``` r
 plot(model)
@@ -1171,13 +1190,352 @@ plot(model)
 
 ![](boston_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->![](boston_files/figure-gfm/unnamed-chunk-19-2.png)<!-- -->![](boston_files/figure-gfm/unnamed-chunk-19-3.png)<!-- -->![](boston_files/figure-gfm/unnamed-chunk-19-4.png)<!-- -->
 
-### 5.5 Lasso
+### 5.6 Lasso Regression
 
 Lasso might not be ideal because linear regression assumptions are
-violated such as the but can be built and used as a baesline model for
-comparison.
+violated but can be built and used as a baesline model for comparison of
+the testing results. Generally, lasso is selected because there is
+multicollinearity issue within the dataset and lasso can help to select
+1 variable from the highly correlated group. A drawback is that the
+removal of correlated group depends on the best selected lambda.
 
-## 6 Model Productionisation
+``` r
+set.seed(123)
+
+model_lasso <- train(medv ~., data = train.data,
+                     method = "glmnet",
+                     trControl = trainControl(method = "repeatedcv",
+                                              number = 10,
+                                              repeats = 3),
+                     tuneGrid = data.frame(alpha = 1,
+                                           lambda = 10^seq(-3, 3, length = 100)))
+```
+
+Identified best lambda is 0.0248.
+
+``` r
+model_lasso$bestTune
+```
+
+    ##    alpha     lambda
+    ## 26     1 0.03274549
+
+``` r
+# Predictions 
+
+predictions_lasso <- model_lasso %>% predict(test.data)
+
+# Performance check
+
+data.frame(
+RMSE(predictions_lasso, test.data$medv),
+R2(predictions_lasso, test.data$medv)
+)
+```
+
+    ##   RMSE.predictions_lasso..test.data.medv. R2.predictions_lasso..test.data.medv.
+    ## 1                                3.489773                             0.8181946
+
+### 5.6 Elastic Net
+
+Trying on the relative of Lasso.
+
+``` r
+set.seed(123)
+
+model_elas <- train(medv ~., data = train.data,
+                     method = "glmnet",
+                     trControl = trainControl(method = "repeatedcv",
+                                              number = 10,
+                                              repeats = 3),
+                     tuneLength = 10)
+```
+
+``` r
+model_elas$bestTune
+```
+
+    ##    alpha     lambda
+    ## 25   0.3 0.09127669
+
+``` r
+# predictions
+
+predictions_elas <- model_elas %>% predict(test.data)
+
+
+# Performance
+
+RMSE(predictions_elas, test.data$medv)
+```
+
+    ## [1] 3.473805
+
+``` r
+R2(predictions_elas, test.data$medv)
+```
+
+    ## [1] 0.819774
+
+### 5.7 K-Nearest Neighbour (KNN)
+
+It is the first non-parametric algorithm that can be used for dataset
+that cannot fulfill the linearity assumptions of regression,
+additionally, this method is immune to multicollinearity.
+
+``` r
+set.seed(123)
+
+model_knn <- train(medv ~., train.data,
+                   method = "knn",
+                   trControl = trainControl(method = "repeatedcv", 
+                                            number = 10,
+                                            repeats = 3),
+                   tuneLength = 100)
+```
+
+The best K value is 5.
+
+``` r
+model_knn$bestTune
+```
+
+    ##   k
+    ## 1 5
+
+It can be seen that when K = 5, this KNN algorithm has the lowest RMSE.
+
+``` r
+plot(model_knn)
+```
+
+![](boston_files/figure-gfm/unnamed-chunk-28-1.png)<!-- -->
+
+Test the perdiction performance of KNN algorithm:
+
+``` r
+# Prediction
+
+predictions_knn <- model_knn %>% predict(test.data)
+
+# Model performance
+
+RMSE(predictions_knn, test.data$medv)
+```
+
+    ## [1] 5.453695
+
+``` r
+R2(predictions_knn, test.data$medv)  
+```
+
+    ## [1] 0.5299246
+
+### 5.8 Decision Tree
+
+``` r
+set.seed(123)
+
+model_DT <- train(medv ~., data = train.data, 
+                  trControl = trainControl(method = "repeatedcv",
+                                           number = 10,
+                                           repeats = 3),
+                  method = "rpart",
+                  tuneLength = 10
+                  )
+```
+
+A complexity parameter (cp) of 0.00814 is recommended as the optimum cp
+that maximized the cross-validation accuracy.
+
+``` r
+model_DT$bestTune
+```
+
+    ##            cp
+    ## 1 0.005043736
+
+``` r
+plot(model_DT)
+```
+
+![](boston_files/figure-gfm/unnamed-chunk-32-1.png)<!-- -->
+
+``` r
+# Model Accuracy
+
+predictions_DT <- model_DT %>% predict(test.data)
+
+# Model performance
+
+RMSE(predictions_DT, test.data$medv)
+```
+
+    ## [1] 3.868659
+
+``` r
+R2(predictions_DT, test.data$medv)
+```
+
+    ## [1] 0.7562959
+
+Following decision tree can help make decisions.
+
+``` r
+par(xpd = NA)
+plot(model_DT$finalModel)
+text(model_DT$finalModel, digits = 3, col = "brown")
+```
+
+![](boston_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->
+
+### 5.9 Random Forest
+
+A random forest is ran in this section. It is a method that build many
+trees and grab an overall averaged result. Each tree is trained
+separately on a bag of random data subset. Trees are independently from
+each other.
+
+It is generally has better predictive performance than single decision
+tree.
+
+``` r
+set.seed(123)
+
+Cl <- makePSOCKcluster(5)
+registerDoParallel(Cl)
+
+# build the model
+start.time <- proc.time()
+
+model_RF <- train(medv ~., data = train.data,
+                  trControl = trainControl(method = "repeatedcv",
+                                           number = 10,
+                                           repeats = 3),
+                  method = "rf",
+                  importance = TRUE)
+
+stop.time <- proc.time()
+run.time <- start.time - stop.time
+print(run.time)
+```
+
+    ##    user  system elapsed 
+    ##   -2.82   -0.04  -46.95
+
+``` r
+varImp(model_RF)
+```
+
+    ## rf variable importance
+    ## 
+    ##         Overall
+    ## rm      100.000
+    ## lstat    88.120
+    ## dis      46.992
+    ## nox      42.578
+    ## ptratio  33.397
+    ## crim     33.196
+    ## age      28.423
+    ## tax      25.446
+    ## indus    17.864
+    ## black    14.918
+    ## rad      11.239
+    ## zn        1.903
+    ## chas      0.000
+
+When “rm” is removed, the MSE (mean squared error) will be increased by
+55.6% followed by “lstat” and “dis”.
+
+``` r
+Imp_table <- data.frame(importance(model_RF$finalModel))
+Imp_table %>% arrange(desc(X.IncMSE)) %>% rename(X.IncMSE_percent = X.IncMSE)
+```
+
+    ##         X.IncMSE_percent IncNodePurity
+    ## rm             41.716519   12247.75039
+    ## lstat          37.005814   13502.63909
+    ## dis            20.697597    2281.92642
+    ## nox            18.947631    1624.32180
+    ## ptratio        15.307122    1525.36734
+    ## crim           15.227210    1795.43329
+    ## age            13.334834     745.68144
+    ## tax            12.154256     710.04680
+    ## indus           9.147796    1006.42812
+    ## black           7.979514     561.98452
+    ## rad             6.521003     183.45674
+    ## zn              2.818879      47.04308
+    ## chas            2.064357      91.87077
+
+``` r
+# Predictions
+
+predictions_RF <- model_RF %>% predict(test.data)
+
+# Model performance
+
+RMSE(predictions_RF, test.data$medv)
+```
+
+    ## [1] 1.979495
+
+``` r
+R2(predictions_RF, test.data$medv)
+```
+
+    ## [1] 0.9365387
+
+``` r
+plot(varImp(model_RF))
+```
+
+![](boston_files/figure-gfm/unnamed-chunk-39-1.png)<!-- -->
+
+### 5.10 Model Comparison
+
+``` r
+library(tidytext)
+
+# set up df
+
+model <- c("Lasso", "Elastic_Net", "KNN", "Decision_Tree", "Random_Forest")
+RMSE_Value <- c(RMSE(predictions_lasso, test.data$medv),
+               RMSE(predictions_elas, test.data$medv),
+               RMSE(predictions_knn, test.data$medv),
+               RMSE(predictions_DT, test.data$medv),
+               RMSE(predictions_RF, test.data$medv)
+               )
+R2_value <- c(R2(predictions_lasso, test.data$medv),
+              R2(predictions_elas, test.data$medv),
+              R2(predictions_knn, test.data$medv),
+              R2(predictions_DT, test.data$medv),
+              R2(predictions_RF, test.data$medv)
+              )
+
+df5.10 <- data.frame(model, RMSE_Value, R2_value)
+df5.10 <- df5.10 %>% 
+  pivot_longer(c(2:3),
+               names_to = "metrics",
+               values_to = "result") %>% 
+  mutate(model = reorder_within(x = model, by = result, within = metrics))
+
+
+# ggplot
+
+ggplot(df5.10, aes(x = fct_reorder(model, -result), y = result, fill = model)) +
+  geom_bar(stat = "identity", width = 0.6) +
+  facet_wrap(~ metrics, scale = "free") +
+  scale_x_reordered() +
+  geom_text(aes(label = round(result,2), vjust = 2)) +
+  theme(legend.position = "none")
+```
+
+![](boston_files/figure-gfm/unnamed-chunk-40-1.png)<!-- -->
+
+It is clearly seen than random forest has the highest R2 at 90% with the
+lowest RMSE at 2.79. It is recognized the best model.
+
+## 6 Model for Production
 
 ## 7 Conclusion
 
