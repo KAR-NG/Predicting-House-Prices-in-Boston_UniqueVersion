@@ -12,7 +12,7 @@ always_allow_html: yes
 
 ***
 
-![]()
+![](https://raw.githubusercontent.com/KAR-NG/boston/main/pic1_thumbnail.png)
 
 ***
 
