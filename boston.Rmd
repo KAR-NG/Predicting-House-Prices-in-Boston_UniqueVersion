@@ -1,5 +1,5 @@
 ---
-title: "Boston House Prices Analysis"
+title: "Boston House Prices - Regression Analysis with Machine Learning"
 author: "Kar Ng"
 date: "2021"
 output: 
@@ -10,47 +10,372 @@ always_allow_html: yes
     
 ---
 
+***
+
+![]()
+
+***
+
 
 ## 1 R PACKAGES
 
 ```{r, warning=FALSE, message=FALSE}
+# R Libraries
+
 library(tidyverse)
 library(skimr)
 library(caret)
 library(MASS)
+library(kableExtra)
+library(qqplotr)
+library(glmnet)
+library(car)
+library(corrplot)
+library(mgcv)
+
+# R setting
+
+options(scipen = 999)
 
 ```
 
 ## 2 INTRODUCTION
 
-This project uses a public dataset named "Boston" from the R package - MASS. This dataset studies the effects of a range of variables on median house prices in Boston near late 70s, United States. 
+This project uses a public dataset named "Boston" from the R package - "MASS". It is a dataset studies the effects of a range of variables on median house prices in Boston in late 70s, United States. 
 
-I will statistically analyse the dataset with machine learning algorithms to find out the effects of each variables on the median house prices and build a model that correctly predict the median house price.
+I will statistically analyse the dataset with machine learning algorithms. I will find out the effects of each variables on the median house prices and build a model that can make predictions of house prices correctly.
 
 
-## 3 DATA IMPORT
+## 3 DATA PROCESSING
+
+### 3.1 Data Import
+
+Following codes import the dataset from the MASS package. Random sampling of 10 rows of data from the dataset:
+
+```{r}
+data("Boston", package = "MASS")
+sample_n(Boston, 10)
+
+```
+
+### 3.2 Data Description
+
+The dataset has important information that may affect the price of a house. For examples, crime rate, number of rooms in the house, nitrogen oxides concentration, its proximity to industrial area, employment centers, highways and etc. 
 
 ```{r}
 
-Boston
+Variables <- names(Boston)
+Description <- c("Per capita crime rate by town.",
+                 "Proportion of residential land zoned for lots over 25,000 sq.ft.",
+                 "Proportion of non-retail business acres per town.",
+                 "Charles River dummy variable (= 1 if tract bounds river; 0 otherwise).",
+                 "Nitrogen oxides concentration (parts per 10 million).",
+                 "Average number of rooms per dwelling.",
+                 "Proportion of owner-occupied units built prior to 1940.",
+                 "Weighted mean of distances to five Boston employment centres.",
+                 "Index of accessibility to radial highways.",
+                 "Full-value property-tax rate per per $10,000.",
+                 "Pupil-teacher ratio by town.",
+                 "1000(Bk - 0.63)^2 where Bk is the proportion of blacks by town.",
+                 "Owner status of the population (percent).",
+                 "Median value of owner-occupied homes in per $1000s.")
+
+data.frame(Variables, Description) %>% 
+  kbl() %>% 
+  kable_styling(bootstrap_options = c("hover", "bordered", "stripped"))
+
+```
+
+### 3.3 Data Exploration
+
+The dataset has 506 rows of observations and 14 columns of variables. All variables in the dataset are in numerical format. 
+
+```{r}
+skim_without_charts(Boston)
+
+
+```
+
+There are also no missing data in the dataset as indicated by the features "n_missing" and "complete_rate", they both inspect the completeness of the dataset.
+
+Following summarise some descriptive statistics of the dataset, such as mean, median, minimum and maximum values. There is 1 binary data indicated in the dataset - "chas" with value either is 0 or 1. However, it will not impact the analysis. 
+
+```{r}
+summary(Boston)
 
 ```
 
 
 ## 4 EXPLORATORY DATA ANALYSIS (EDA)
 
+```{r}
+# set up data frame
+
+bos <- Boston %>% 
+  pivot_longer(c(1:14), names_to = "variable", values_to = "result") %>% 
+  arrange(variable)
+
+```
+
+
+### 4.1 Distribution Study
+
+```{r, fig.width=8, fig.height=6}
+
+ggplot(bos, aes(x = result, fill = variable)) +
+  geom_histogram(colour = "white", bins = 30) +
+  facet_wrap(~ variable, scale = "free") +
+  theme(legend.position = "none")
+
+
+```
+Insight:
+
+* All variables seems to have different distribution.    
+* The *chas* seems to have a binary distribution with value of either 1 or 0. 
+* The *rm* has a distribution that close to Gaussian distribution
+* Many variables except *chas* and *rm* seems to have skewed to both directions.    
+
+
+### 4.2 Outliers Detection
+
+This section uses boxplot as an alternative visualization of outliers.
+
+```{r, fig.width=10, fig.height=6}
+
+ggplot(bos, aes(x = result, fill = variable)) +
+  geom_boxplot() +
+  facet_wrap(~ variable, scale = "free") +
+  theme(legend.position = "none")
+
+
+```
+Insight:
+
+* Outliers exists in many variables include *black, crim, dis, lstat, medv, ptratio, zn,* and even the Gaussian distribtued *rm*。
+
+
+The distribution and box plots show that the assumptions of linear regression have been violated and thus a non-linear regression would perform better than linear regression algorithm.
+
+
+### 4.3 Relationships 
+
+In relation to median house prices, visualisation shows that:
+
+```{r, fig.height=12, fig.width=10, warning=FALSE, message=FALSE}
+
+bos2 <- Boston %>% 
+  pivot_longer(c(1:13), names_to = "variable", values_to = "result") %>% 
+  arrange(variable)
+
+# plot
+
+ggplot(bos2, aes(x = result, y = medv, colour = variable)) +
+  geom_point(alpha = 0.5) +
+  facet_wrap(~variable, scales = "free_x", ncol = 2) +
+  theme_bw() +
+  theme(legend.position = "none",
+        plot.title = element_text(face = "bold", size = 14, hjust = 0.5, vjust = 2),
+        strip.text = element_text(size = 10),
+        axis.title.x = element_text(margin = margin(10, 0, 0 ,0)),
+        axis.title.y = element_text(margin = margin(0, 10, 0, 0))) +
+  geom_smooth(se = F) +
+  labs(x = "Variables",
+       y = "Median House Price, /$1000",
+       title = "The Impact of Environmental Features on Median House Prices")
+  
+
+
+```
+
+Insights:
+
+* "age" of a house has little positive impact   
+* "black" community has a positive impact  
+* "chas", the present of Charles River on house prices is not visually clear and may have no impact  
+* Crime rate, "crim", has a negative impact  
+* "dis", the distances to employment centres, do not have a impact     
+* Proportion of non-retail business, "indus", has a negative impact    
+* The level of owner status, "lstat", has a large negative impact  
+* The concentration of nitrogen oxide concentration, "nox", has a gradual negative impact  
+* Pupil-teacher ratio by town, "ptratio", has negative impact   
+* Accessibility to radial highways, "rad"" has negative impact  
+* Number of room, "rm", has a large positive impact  
+* Tax has a negative impact  
+* "zn" - the proportion of residential land zoned for lots has positive impact  
+
+
+## 5 Model building
+
+### 5.1 Preliminary Variable Selection 
+
+This section is meant to select the variables that is related to the topic of this analysis and eliminated irrelevant ones. 
+
+However, since the aim of this project is to analyse each and every single variables in the dataset and their relatability to median house prices, represented by "medv", I will keep all variables. 
+
+```{r}
+names(Boston)
+
+```
+
+
+### 5.2 Train-test split
+
+This section create data partitions into 80% of train set and 20% test set. The train set will be used to build models and the test set will be used to evaluate the performance of models.
+
+```{r}
+# Create data partition
+
+train.index <- Boston$medv %>% createDataPartition(p = 0.8, list = F)
+
+# Get train and test set
+
+train.data <- Boston[train.index, ]
+test.data <- Boston[-train.index, ]
+  
+```
+
+
+### 5.3 Multiple Linear Regression (MLR)
+
+It is an exploratory model for inferential purposes built before multicollinearity test. This model help to generate statistical insights from the variables and studies their coefficient estimates. This model will not be used for prediction.
+
+```{r}
+
+# Using original dataset to include all data into this model
+
+model_mlr <- lm(medv ~., data = Boston)
+
+summary(model_mlr)
+
+```
+**Model Performance**
+
+Results show the p-value of the F-Statistics of this model is < 0.05, it indicates that there is at least of the predictor variable is significantly related to the median house prices. 
+
+The Adjusted R-squared of this model is 0.7338, which is a good indication that this multiple linear regression model good and is able to explain 73.38% of the variation in the median house prices. 
+
+The Residual standard error (RSE) is 4.745. This corresponds to an error rate of 21%, which is acceptable. 
+ 
+```{r}
+
+4.745/mean(Boston$medv)
+
+```
+
+**Insights**
+
+* Variables that do not have significant relationship (P-value > 0.05) with median house price are "age" and "indus".
+
+```{r}
+
+df <- data.frame(summary(model_mlr)$coef) 
+
+df <- df %>% 
+  dplyr::select(Estimate, Pr...t..) %>% 
+  rename(P_value = Pr...t..) %>% 
+  arrange(Estimate)
+
+df %>% 
+  filter(P_value > 0.05) %>% 
+  arrange(P_value)
+
+
+```
+
+* In ascending order of coefficient estimate, variables that have **positive** significant relationship with median house prices are "rm", "rad", "black", "zn" and "chas".
+
+```{r}
+df %>% 
+  filter(P_value < 0.05,
+         Estimate > 0) %>% 
+  arrange(Estimate)
+  
+  
+```
+
+* In ascending order of coefficient estimates, variables that have **negative** significant relationship with median house prices are nox, dis, ptratio, lstat, crim, and tax. 
+
+```{r}
+
+df %>% 
+  filter(P_value < 0.05,
+         Estimate < 0) %>% 
+  arrange(Estimate)
+
+```
+
+
+### 5.4 Multicollinearity Detection
+
+These is high correlation between "rad" and "tax". Therefore, one of them will be kept in the future prediction model. This is a typical collinearity or multicollinearity problem that the existence of this problem would affect the standard errors of our coeffcients and making p-value invalid. 
+
+This is identified via correlogram of the predictors in the dataset. As a rule of thumb, a correlation of between 0.8 to 1 indicates multicollinearity issue. 
+
+```{r, fig.width=8, fig.height=7}
+my_cor <- cor(train.data[1:13])
+
+corrplot(my_cor, method = "number", type = "lower")
+
+```
+Alternatively a variance inflation factor (VIF) test is carried out. A VIF that exceed 5 indicates a problematic amount of collinearity (James et al. 2014).
+
+```{r}
+
+model <- lm(medv ~., data = train.data)
+vif(model)
+
+```
+
+
+### 5.5
+
+```{r}
+
+plot(model)
+
+```
 
 
 
 
-## 
+
+### 5.5 Lasso
+
+Lasso might not be ideal because linear regression assumptions are violated such as the   but can be built and used as a baesline model for comparison. 
 
 
-## REFERENCE 
 
-Harrison, D. and Rubinfeld, D.L. (1978) Hedonic prices and the demand for clean air. J. Environ. Economics and Management 5, 81–102.
+
+
+
+
+
+## 6 Model Productionisation
+
+
+## 7 Conclusion
+
+
+
+## 8 LEGALITY  
+
+The purpose of this project is for educational and skills demonstration ONLY. 
+
+
+## 9 REFERENCE 
+
 
 Belsley D.A., Kuh, E. and Welsch, R.E. (1980) Regression Diagnostics. Identifying Influential Data and Sources of Collinearity. New York: Wiley.
 
+Brownlee J 2016, *How to Work Through a Regression Machine Learning Project in Weka*, viewed 26 September 2021, https://machinelearningmastery.com/regression-machine-learning-tutorial-weka/ 
 
+Harrison, D. and Rubinfeld, D.L. (1978) Hedonic prices and the demand for clean air. J. Environ. Economics and Management 5, 81–102.
 
+James, Gareth, Daniela Witten, Trevor Hastie, and Robert Tibshirani. 2014. An Introduction to Statistical Learning: With Applications in R . Springer Publishing Company, Incorporated.
+
+Minitab Blog Editor 2013, *Enough Is Enough! Handling Multicollinearity in Regression Analysis*, viewed 25 September 2021, https://blog.minitab.com/en/understanding-statistics/handling-multicollinearity-in-regression-analysis
+
+Sivakumar C 2017, *https://rpubs.com/chocka314/251613*, viewed 28 September 2021, https://rpubs.com/chocka314/251613
+
+https://cran.r-project.org/web/packages/MASS/MASS.pdf
