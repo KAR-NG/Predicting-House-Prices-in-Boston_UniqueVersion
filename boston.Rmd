@@ -43,9 +43,9 @@ options(scipen = 999)
 
 ## 2 INTRODUCTION
 
-This project uses a public dataset named "Boston" from the R package - "MASS". It is a dataset studies the effects of a range of variables on median house prices in Boston in late 70s, United States. 
+This project uses a public dataset named "Boston" from the R package - "MASS". This dataset studies the effects of a range of variables on median house prices in Boston in late 70s, United States. 
 
-I will statistically analyse the dataset with machine learning algorithms. I will find out the effects of each variables on the median house prices and build a model that can make predictions of house prices correctly.
+I will statistically analyse the dataset with machine learning algorithms. I will find out the effects of each variables on the median house prices and build a model that can make predictions of the house prices correctly.
 
 
 ## 3 DATA PROCESSING
@@ -107,6 +107,17 @@ summary(Boston)
 
 ```
 
+*Insights*
+
+* There is no missing data (either written or "NA") in the dataset either in column or row. 
+
+```{r}
+
+colSums(is.na(Boston))
+
+```
+
+
 
 ## 4 EXPLORATORY DATA ANALYSIS (EDA)
 
@@ -133,9 +144,9 @@ ggplot(bos, aes(x = result, fill = variable)) +
 ```
 Insight:
 
-* All variables seems to have different distribution.    
+* All variables seem to have different distributions.    
 * The *chas* seems to have a binary distribution with value of either 1 or 0. 
-* The *rm* has a distribution that close to Gaussian distribution
+* The *rm* has a distribution that close to Gaussian distribution.
 * Many variables except *chas* and *rm* seems to have skewed to both directions.    
 
 
@@ -154,7 +165,7 @@ ggplot(bos, aes(x = result, fill = variable)) +
 ```
 Insight:
 
-* Outliers exists in many variables include *black, crim, dis, lstat, medv, ptratio, zn,* and even the Gaussian distribtued *rm*。
+* Outliers exists in many variables include *black, crim, dis, lstat, medv, ptratio, zn,* and even in the Gaussian distribtued *rm*。
 
 
 The distribution and box plots show that the assumptions of linear regression have been violated and thus a non-linear regression would perform better than linear regression algorithm.
@@ -211,9 +222,9 @@ Last but not least, the relationship between the dependent variable "medv" and e
 
 ### 5.1 Preliminary Variable Selection 
 
-This section is meant to select the variables that is related to the topic of this analysis and eliminated irrelevant ones. 
+This section is meant to select the variables that is related to the topic of this project and eliminated irrelevant ones. 
 
-However, since the aim of this project is to analyse each and every single variables in the dataset and their relatability to median house prices, represented by "medv", I will keep all variables. 
+However, since the aim of this project is to analyse each and every single variables in the dataset and their relatability to the median house prices in Boston, represented by "medv", I will therefore keep all variables. 
 
 ```{r}
 
@@ -227,6 +238,8 @@ names(Boston)
 This section create data partitions into 80% of train set and 20% test set. The train set will be used to build models and the test set will be used to evaluate the performance of models.
 
 ```{r}
+set.seed(123)
+
 # Create data partition
 
 train.index <- Boston$medv %>% createDataPartition(p = 0.8, list = F)
@@ -286,18 +299,18 @@ df %>%
 
 ```
 
-* In ascending order of coefficient estimate, variables that have **positive** significant relationship with median house prices are "rm", "rad", "black", "zn" and "chas".
+* In term of impact on median house prices, variables that have **positive** significant relationship with median house prices are "rm", "chas", "rad", "zn", and "black".
 
 ```{r}
 df %>% 
   filter(P_value < 0.05,
          Estimate > 0) %>% 
-  arrange(Estimate)
+  arrange(desc(Estimate))
   
   
 ```
 
-* In ascending order of coefficient estimates, variables that have **negative** significant relationship with median house prices are nox, dis, ptratio, lstat, crim, and tax. 
+* In term of impact on median house prices, variables that have **negative** significant relationship with median house prices are "nox", "dis", "ptratio", "lstat", "crim", and "tax". 
 
 ```{r}
 
@@ -309,11 +322,21 @@ df %>%
 ```
 
 
+Insights from this section: 
+
+* The most influential variable on median house prices in a positive way is the number of room a house has.
+
+* The most influential variable on median house prices in a negative way is the concentration of nitrogen oxides in the air.
+
+* The proportion of non-retail business acrs per town "indus" and the proportion of owner-occupied units built prior to 1940 "age" do not have significant impact on median house prices. 
+
+
+
 ### 5.4 Multicollinearity Detection
 
-These is high correlation between "rad" and "tax". Therefore, one of them will be kept in the future prediction model. This is a typical collinearity or multicollinearity problem that the existence of this problem would affect the standard errors of our coeffcients and making p-value invalid. 
+There is a high correlation between "rad" and "tax". Therefore, one of them will be kept in the future prediction model. This is a multicollinearity problem that the its existence would affect the standard errors of our coeffcients, widdening the range of 95% confidence interval, and making p-values invalid. 
 
-This is identified via correlogram of the predictors in the dataset. As a rule of thumb, a correlation of between 0.8 to 1 indicates multicollinearity issue. 
+This is identifiable via correlogram of the predictors in the dataset. As a rule of thumb, a correlation of between 0.8 to 1 indicates multicollinearity issue. 
 
 ```{r, fig.width=8, fig.height=7}
 my_cor <- cor(train.data[1:13])
@@ -321,7 +344,8 @@ my_cor <- cor(train.data[1:13])
 corrplot(my_cor, method = "number", type = "lower")
 
 ```
-Alternatively a variance inflation factor (VIF) test is carried out. A VIF that exceed 5 indicates a problematic amount of collinearity (James et al. 2014).
+
+An alternative popular test is called variance inflation factor (VIF). A VIF that exceed 5 indicates a problematic amount of collinearity (James et al. 2014).
 
 ```{r}
 
@@ -337,8 +361,9 @@ Following diagnostic plots show that:
 
 * The 
 
+
 ```{r}
-par(nfrow = c(2,2))
+par(mfrow = c(2,2))
 
 plot(model)
 
