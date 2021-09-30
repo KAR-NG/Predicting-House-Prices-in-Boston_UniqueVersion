@@ -357,24 +357,39 @@ vif(model)
 
 ### 5.5 Assumption tests of Multiple Linear Regressions
 
-Following diagnostic plots show that:
+This section describe whether the assumptions of linear regression is fulfilled.
 
-* The 
-
+* The relationship between independent variables and the responding variable is non-linear. It can be assessed through the relationship  graph in section 4.3 and following model diagnostic graph.   
 
 ```{r}
-par(mfrow = c(2,2))
 
-plot(model)
+plot(model, 1)
 
 ```
 
+* The second assumption is that independent variables should be independent from each other. There is multicollinearity problem between "rad" and "tax".  
+
+* Following plot of standardised residual against the fitted values show that the amount of error is not similar at each data point of the linear model and therefore it has a feature of heteroscedasticity. A desired trend is straight line line across the middle of the plot.
 
 
+```{r}
+
+plot(model, 3)
+
+```
+* There is also no multvariate normality shown by a standard Q-Q plot below formed by the multiple linear regression model. An ideal trend is when all points are falling near the straight line in the plot. 
+
+```{r}
+plot(model, 2)
+```
 
 ### 5.6 Lasso Regression
 
-Lasso might not be ideal because linear regression assumptions are violated but can be built and used as a baesline model for comparison of the testing results. Generally, lasso is selected because there is multicollinearity issue within the dataset and lasso can help to select 1 variable from the highly correlated group. A drawback is that the removal of correlated group depends on the best selected lambda. 
+Thanks to diagnostic results that reveal non-linear model shoud be used.
+
+However, I will use a lasso regression in this section which is a model with linear assumption. I would like to use it as a baseline model to compare with other models built in later section. 
+
+Generally, lasso regression is selected when there is multicollinearity issue within the dataset and lasso can help to select 1 variable from the highly correlated group. A drawback is that the removal of correlated group actually depends on the selection of lambda and a trade-off would occur between the removal of  with the model performance metric.  
 
 
 ```{r, warning=FALSE}
@@ -387,15 +402,17 @@ model_lasso <- train(medv ~., data = train.data,
                                               repeats = 3),
                      tuneGrid = data.frame(alpha = 1,
                                            lambda = 10^seq(-3, 3, length = 100)))
+
 ```
 
-Identified best lambda is 0.0248.
+Identified best lambda is 0.0142.
 
 ```{r}
 model_lasso$bestTune
 
 ```
 
+The R2 is 0.76, meaning that the observed and predicted outcome values has a good correlation. The prediction error RMSE is 4.587 which representing an eror rate of 20.27%, which is considered high enough that an alternative model should be explored.  
 
 ```{r}
 # Predictions 
@@ -405,14 +422,17 @@ predictions_lasso <- model_lasso %>% predict(test.data)
 # Performance check
 
 data.frame(
-RMSE(predictions_lasso, test.data$medv),
-R2(predictions_lasso, test.data$medv)
-)
+  R2_Value_lasso = R2(predictions_lasso, test.data$medv),
+  RMSE_Value_lasso = RMSE(predictions_lasso, test.data$medv)) %>% 
+  mutate(Error_rate_lasso = RMSE_Value_lasso/mean(test.data$medv) *100)
+
 ```
+
+
 
 ### 5.6 Elastic Net 
 
-Trying on the relative of Lasso. 
+Applying elastic net, which is a relative of lasso that incorportate the effect of ridge regression in its algorithm.
 
 ```{r, warning=FALSE}
 set.seed(123)
@@ -425,11 +445,14 @@ model_elas <- train(medv ~., data = train.data,
                      tuneLength = 10)
 ```
 
+R shows that the best lambda is 0.0895.
 
 ```{r}
 model_elas$bestTune
 
 ```
+
+This model has a similar R2, RMSE, and error rate as the lasso regression. 
 
 ```{r}
 # predictions
@@ -439,18 +462,18 @@ predictions_elas <- model_elas %>% predict(test.data)
 
 # Performance
 
-RMSE(predictions_elas, test.data$medv)
-R2(predictions_elas, test.data$medv)
+data.frame(
+  R2_value_Elas = R2(predictions_elas, test.data$medv),
+  RMSE_value_Elas = RMSE(predictions_elas, test.data$medv)) %>% 
+  mutate(Error_rate_Elas = RMSE_value_Elas/mean(test.data$medv) * 100)
 
 ```
 
 
 
-
-
 ### 5.7 K-Nearest Neighbour (KNN)
 
-It is the first non-parametric algorithm that can be used for dataset that cannot fulfill the linearity assumptions of regression, additionally, this method is immune to multicollinearity.
+KNN is the first non-parametric algorithm that can be used for dataset that cannot fulfill the linearity assumptions of regression, additionally, this method is immune to multicollinearity.
 
 ```{r}
 set.seed(123)
@@ -478,7 +501,7 @@ plot(model_knn)
 
 ```
 
-Test the perdiction performance of KNN algorithm: 
+KNN has the higher error rate during prediction using the test data. It indicates that this algoritm is not suitable for this dataset. 
 
 ```{r}
 # Prediction
@@ -486,15 +509,17 @@ Test the perdiction performance of KNN algorithm:
 predictions_knn <- model_knn %>% predict(test.data)
 
 # Model performance
-
-RMSE(predictions_knn, test.data$medv)
-R2(predictions_knn, test.data$medv)  
+data.frame(
+  R2_value_knn = R2(predictions_knn, test.data$medv),
+  RMSE_Value_knn = RMSE(predictions_knn, test.data$medv)) %>% 
+  mutate(Error_Rate_knn = RMSE_Value_knn/mean(test.data$medv) * 100)
 
 ```
 
 
 ### 5.8 Decision Tree
 
+It is expecting that decision tree should perform better than linear regression in this dataset when the there is highly non-linear relationship and this method is also immune to multicolliearity issue. 
 
 ```{r, warning=FALSE}
 
@@ -517,10 +542,13 @@ model_DT$bestTune
 
 ```
 
+As shown by following plot. 
+
 ```{r}
 plot(model_DT)
 
 ```
+The performance metric of decision tree show that 
 
 ```{r}
 
@@ -529,9 +557,12 @@ plot(model_DT)
 predictions_DT <- model_DT %>% predict(test.data)
 
 # Model performance
+data.frame(
+  R2_Value_DT = R2(predictions_DT, test.data$medv),
+  RMSE_Value_DT = RMSE(predictions_DT, test.data$medv)
+) %>% 
+  mutate(Error_Rate_DT = RMSE_Value_DT/mean(test.data$medv) * 100)
 
-RMSE(predictions_DT, test.data$medv)
-R2(predictions_DT, test.data$medv)
 
 
 
