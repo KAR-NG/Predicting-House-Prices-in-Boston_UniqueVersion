@@ -1,5 +1,5 @@
 ---
-title: "Boston House Prices - Regression Analysis with Machine Learning"
+title: "Boston House Prices - Regression Analysis in Machine Learning"
 author: "Kar Ng"
 date: "2021"
 output: 
@@ -12,11 +12,10 @@ always_allow_html: yes
 
 ***
 
-![](https://raw.githubusercontent.com/KAR-NG/boston/main/pic1_thumbnail.png)
+![](https://raw.githubusercontent.com/KAR-NG/Predicting-House-Prices-in-Boston_UniqueVersion/main/pic1_thumbnail.png)
 (*Picture by King of Hearts*)
 
 ***
-
 
 ## 1 R PACKAGES
 
@@ -48,10 +47,15 @@ options(scipen = 0)
 
 This project uses a public dataset named "Boston" from the R package - "MASS". However, I have edited this dataset a bit to make overall analysis a little more interesting and unique. First, I changed the names of most of the columns into names that are more representative, it won't affect the analysis. Second, I induced some missing values in 2 of the 14 columns, "black" and "lstat" and I will use R to impute the missing values with algorithm.
 
-In short, this boston housing dataset studies the effects of a range of variables on median house prices in Boston in late 70s, United States. 
+In short, this Boston housing dataset studies the effects of a range of variables on median house prices in Boston in late 70s, United States. 
 
 I will statistically analyse the dataset and make predictions with machine learning algorithms. Then, I will find out the effects of each variables on the median house prices and pick a model that has the highest predictive power.
 
+
+
+*Highlights of some upcoming graphs*
+
+![](https://raw.githubusercontent.com/KAR-NG/Predicting-House-Prices-in-Boston_UniqueVersion/main/pic2_highlights.png)
 
 ## 3 DATA PREPARATION
 
@@ -235,7 +239,7 @@ Now, the dataset is ready for next stage.
 
 Transforming the data frame for effective EDA.
 
-```{r, warning=False}
+```{r, warning=FALSE}
 
 bos <- boston %>% 
   gather(key = "key", value = "value") %>% 
@@ -474,6 +478,9 @@ Insights from this section:
 This section describes whether the assumptions of linear regression is fulfilled.
 
 * The relationship between independent variables and the responding variable is non-linear. 
+
+
+
 
 ```{r}
 
@@ -958,15 +965,28 @@ From this result, I conclude that random forest algorithm has the highest predic
 
 This R-squared value means that the predicted outcome values by the Random Forest using the test dataset has a high correlation with the observed values in the test dataset. Alternatively, ~90% similar. Random forest has also the lowest prediction error rate at 13.43% (RMSE divided by the mean of the y variables in test dataset).
 
-Saving the model for production. 
-
-```{r}
-saveRDS(model_rf, "boston_rf_model.rds")
-```
-
 
 
 ## 6 Model for Production
+
+Saving the random forest model for model production with RShiny. 
+
+```{r}
+saveRDS(model_rf, "boston_rf_model.rds")
+
+```
+
+Saving the random forest model for model production with RShiny.
+
+```{r}
+write_csv(train.data, "train.csv")
+
+```
+
+
+```{r}
+iris[, -1]
+```
 
 
 (In Progress)
@@ -991,11 +1011,13 @@ The purpose of this project is for educational and skills demonstration ONLY.
 
 ## 9 REFERENCE 
 
-Boston thumnail picture By King of Hearts - Own work, CC BY-SA 4.0, https://commons.wikimedia.org/w/index.php?curid=62981160
+Boston thumbnail picture By King of Hearts - Own work, CC BY-SA 4.0, https://commons.wikimedia.org/w/index.php?curid=62981160
 
 Belsley D.A., Kuh, E. and Welsch, R.E. (1980) Regression Diagnostics. Identifying Influential Data and Sources of Collinearity. New York: Wiley.
 
 Brownlee J 2016, *How to Work Through a Regression Machine Learning Project in Weka*, viewed 26 September 2021, https://machinelearningmastery.com/regression-machine-learning-tutorial-weka/ 
+
+Data Professor 2020, *Web Apps in R: Building the Machine Learning Web Application in R | Shiny Tutorial Ep 4*, viewed 4 October 2021, https://www.youtube.com/watch?v=ceg7MMQNln8&t=847s 
 
 Harrison, D. and Rubinfeld, D.L. (1978) Hedonic prices and the demand for clean air. J. Environ. Economics and Management 5, 81–102.
 
