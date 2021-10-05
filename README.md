@@ -8,6 +8,12 @@
 ![pic2_highlights](https://user-images.githubusercontent.com/81752452/135813428-508f5535-ff87-4f4f-b35e-4459cb580b17.png)
 
 
+# RShiny Application 
+
+Visit this link to use the online app to make predictions with your favourite numbers:
+https://karhou.shinyapps.io/boston/
+
+
 # Reference
 
 Boston thumbnail picture By King of Hearts - Own work, CC BY-SA 4.0, https://commons.wikimedia.org/w/index.php?curid=62981160
