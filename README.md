@@ -13,6 +13,8 @@
 Visit this link to use the online app to make predictions with your favourite numbers:
 https://karhou.shinyapps.io/boston/
 
+![pic4_shiny](https://user-images.githubusercontent.com/81752452/135969899-0510d4d4-2481-4162-9575-ab5d9bc68b0c.JPG)
+
 
 # Reference
 
