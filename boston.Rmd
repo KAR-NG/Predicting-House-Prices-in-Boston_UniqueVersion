@@ -1,5 +1,5 @@
 ---
-title: "Boston House Prices - Regression Analysis in Machine Learning"
+title: "Boston House Prices [Unique Version]- Regression Analysis with Machine Learning"
 author: "Kar Ng"
 date: "2021"
 output: 
@@ -45,25 +45,23 @@ options(scipen = 0)
 
 ## 2 INTRODUCTION
 
-This project uses a public dataset named "Boston" from the R package - "MASS". However, I have edited this dataset a bit to make overall analysis a little more interesting and unique. First, I changed the names of most of the columns into names that are more representative, it won't affect the analysis. Second, I induced some missing values in 2 of the 14 columns, "black" and "lstat" and I will use R to impute the missing values with algorithm.
+This project uses a public dataset named "Boston" from the R package - "MASS". It is a famous dataset for machine learning. However, I have made adjustment to this dataset to make overall analysis interesting and unique. First, I changed the names of most of the columns into names that are more representative; Second, I induced some missing values in 2 of the 14 columns, "black" and "lstat", and I will use R to impute the missing values with algorithm.
 
-In short, this Boston housing dataset studies the effects of a range of variables on median house prices in Boston in late 70s, United States. 
+This Boston housing dataset studies the effects of a range of variables on median house prices in Boston in **late 70s**, United States. 
 
-I will statistically analyse the dataset and make predictions with machine learning algorithms. Then, I will find out the effects of each variables on the median house prices and pick a model that has the highest predictive power.
-
+I will statistically analyse the dataset and make predictions with machine learning algorithms. Then, I will study the effects of each variables on the median house prices, pick a model that has the highest predictive power, and build an online interactive application by using RShiny in *section 6 - Model for Production*.
 
 
 *Highlights of some upcoming graphs*
 
 ![](https://raw.githubusercontent.com/KAR-NG/Predicting-House-Prices-in-Boston_UniqueVersion/main/pic2_highlights.png)
 
+
 ## 3 DATA PREPARATION
 
 ### 3.1 Data Import
 
-This section import my specially edited dataset, this dataset has been uploaded to my github.
-
-Following is 10 rows of data randomly selected from the dataset.
+This section imports the edited version of the dataset. Following is 10 rows of data randomly selected from the dataset.
 
 ```{r}
 
@@ -73,11 +71,14 @@ sample_n(boston, 10)
 ```
 
 
+
 ### 3.2 Data Description
 
-The dataset has important information that may affect the price of a house. For examples, crime rate, number of rooms in the house, nitrogen oxides concentration, its proximity to industrial area, employment centers, highways and etc. 
+The dataset has important information regarding factors that may affect the price of a house in Boston in late 70s. For examples, crime rate, number of rooms in the house, nitrogen oxides concentration, its proximity to industrial area, employment centers, highways and etc.
 
-Following are the description of features. 
+The unit of the house value is "median house price". Believing this median values is extracted from multiple houses in the respective regions in the city.
+
+Following is the data description adapted from the relevant R package. 
 
 ```{r}
 
@@ -105,16 +106,16 @@ data.frame(Variables, Description) %>%
 
 ### 3.3 Data Exploration
 
-The dataset has 506 rows of observations and 14 columns of variables. All variables are numerically associated. 
+The dataset has 506 rows of observations and 14 columns of variables. All variables are in numerical form.
 
 ```{r}
 glimpse(boston) 
 
 ```
 
-However, from the data description, "charles.river" is either 0 or 1, and therefore it should be a categorical variable with a factor type in R. The first variable has to be removed, and it will be done in the next data cleaning section. 
+From observation, "charles.river" is either 0 or 1, and therefore it should be a categorical variable and it should be assigned with factor type. The first variable, "x", has to be removed because it is just row number and irrelevant.
 
-There are 12 and 17 missing data in the "black" and "lstat" column. Fortunately, the completeness of these two variables are 97.6% and 96.6%. It is a matter of choice whether one wants to remove these values or apply imputation techniques. I will go with the later as it is my purpose of inducing these missing values. 
+There are 12 and 17 missing data in the "black" and "lstat" column. Fortunately, the completeness of these two variables are 97.6% and 96.6%. It is a matter of choice whether one wants to remove these values or apply imputation techniques. I will go with the later as it is my purpose to induce these missing values using imputation model using R. 
 
 ```{r}
 skim_without_charts(boston)
@@ -122,7 +123,7 @@ skim_without_charts(boston)
 
 ```
 
-Alternatively, I can examine missing data in the dataset by following code.
+Alternatively, I can examine missing data in the dataset by following code. There are 12 missing data in the column "black", and 17 from the column "lstat". 
 
 ```{r}
 colSums(is.na(boston))
@@ -144,7 +145,7 @@ summary(boston)
 
 ## 4 DATA CLEANING
 
-This part convert the dataset into a analysis-ready format for machine learning. 
+This part converts the dataset into a format that is appropriate for analysis or storage.
 
 Depending on context, my usual cleaning techniques include but not limited to the following:
 
@@ -157,7 +158,7 @@ Depending on context, my usual cleaning techniques include but not limited to th
 * Factorise variables (or known as features).   
 * Feature engineering if required.  
 
-Cleaning task of this dataset identified from previous section:  
+Several specific cleaning tasks identified from the previous section:  
 
 * Remove the first column "x".    
 * Convert "charles.river" from integer into factor.      
@@ -166,7 +167,7 @@ Cleaning task of this dataset identified from previous section:
 
 ### 4.1 Column removal and factorise
 
-Following code remove first column "X" which is the row ID, and factorise the binary column, "charles.river".
+Following code remove first column "X" which is the row number, and factorise the binary column, "charles.river" to convert it into factor. 
 
 ```{r}
 boston <- boston %>% 
@@ -195,7 +196,7 @@ colSums(is.na(boston.dummy))
 
 ```
 
-Now, I am building an imputation model that uses all columns in the dataset and to predict these missing values, by the method of "Bag Decision Tree".
+Now, I am building an imputation model that uses all columns in the dataset to predict these missing values, by the method of "Bagged Decision Trees".
 
 ```{r}
 
@@ -206,14 +207,14 @@ imputed.boston <- imputation.model %>% predict(boston.dummy)
 
 ```
 
-And the missing values have been filled up by imputation.
+And the missing values have now been filled up by imputation.
 
 ```{r}
 colSums(is.na(imputed.boston))
 
 ```
 
-Over-writing the original "black" and "lstat" with the newly imputed new "black" and "lstat" columns.
+Over-writing the original "black" and "lstat" with the newly imputed "black" and "lstat" columns.
 
 ```{r}
 
@@ -222,7 +223,7 @@ boston$lstat <- imputed.boston[, 14]
 
 ```
 
-Now, there is no more missing values in the data.
+Now, there are no more missing values in the dataset.
 
 ```{r}
 colSums(is.na(boston))
@@ -243,7 +244,7 @@ glimpse(boston)
 
 ```
 
-
+Perfection. 
 
 
 ## 5 EXPLORATORY DATA ANALYSIS (EDA)
@@ -260,7 +261,7 @@ bos <- boston %>%
 
 ### 5.1 Distribution Study
 
-This part is important in studying at the distribution of the data of each variable (or feature). In general, any non-skewed distribution that closes to a Gaussian distribution would be useful for the prediction of the house value. They would have good relation with the responding variable. 
+This section studies data distribution of each variables. In general, any non-skewed distribution that closes to a Gaussian distribution would be more useful for the prediction of the house value. They would have good relation with the responding variable - "house.value". 
 
 ```{r, fig.width=8, fig.height=6}
 
@@ -270,14 +271,15 @@ ggplot(bos, aes(x = value, fill = key)) +
   theme(legend.position = "none")
 
 ```
+
 Insight:
 
-* The *charles.river* has a binary distribution with value of either 1 or 0.   
-* The *rm* has a distribution that close to Gaussian distribution.  
-* The y variable *house.value* has a near Gaussian distribution which is a good sign.   
-* Many variables except *chas* and *rm* seems to have skewed to both directions.      
+* The *charles.river* has a binary distribution with value in either 1 or 0.   
+* The *room* has a distribution that closes to Gaussian distribution.  
+* The y variable *house.value* has a nearly Gaussian distributed distribution which is a good sign.   
+* Many variables except *charles.river* and *room* seems to have skewed to both directions.      
 
-This part would help in manually selection of features when trying to make the prediction based on traditional linear regression that sensitive to outliers. Outliers are probably the reasons causing these skews. However, choosing a type of machine learning model that robust to outliers, such as decision tree, will be an alternative powerful option.  
+This part would help in manual selection of features when trying to make the prediction based on traditional linear regression that sensitive to outliers. Outliers are probably the reasons causing these skews. However, choosing a type of machine learning model that robust to outliers, such as decision tree, will be an alternative powerful option.  
 
 
 ### 5.2 Outliers Detection
@@ -294,9 +296,9 @@ ggplot(bos, aes(x = value, fill = key)) +
 
 ```
 
-Outliers exists in many variables include *black, crim, dis, lstat, medv, ptratio, zn,* and even in the Gaussian distribtued *rm*。
+Outliers exists in many variables include *black, crime.rate, dist.to.work, lstat, house.value, ptratio, resid.zone,* and even in the Gaussian distributed *room*。
 
-The distribution and box plots show that the assumptions of linear regression have been violated and thus a non-linear regression would perform better than linear regression algorithm, such as KNN, decision tree, 
+The distribution plots and box plots show that the assumptions of linear regression have been violated and therefore a non-linear regression would perform better than linear regression algorithm, such as KNN and tree-base algorithms. 
 
 
 ### 5.3 Relationships 
@@ -330,20 +332,20 @@ ggplot(bos2, aes(x = result, y = house.value, colour = variable)) +
 
 Insights:
 
-* The variables that related (either positive or negative) the most with the median house prices are "room", "lstat", pt.ratio, and probably resid.zone.  
+* The variables that related (either positive or negative) the most with the median house prices are "*room*", "*lstat*", "*pt.ratio*", and probably "*resid.zone*".  
 
-* Relationships of other variables with the median house price are not as much.
+* The relationships of other variables with the median house price are not as much.
 
-* The relationship between the median house prices and each of the independent variables is not linear. 
+* The relationships between the median house prices and each of the independent variables are not linear. 
 
 
 ### 5.4 Multicollinearity
 
-This section tests for the existence of multicollinearity within the dataset. It is a problem when two or more predictor variables are correlated with each other. One of the assumption of linear regression is to have predictor variables independent from each other. 
+This section tests for the existence of multicollinearity within the dataset. It is a problem when two or more predictor variables are correlated with each other. One of the assumption of linear regression is to have predictor variables independent from each other. Multicollinearity can violate this assumption. 
 
-Therefore, multicollinearity can violate this assumption. The existence of multicollinearity will increase the standard errors of coefficients estimates in the linear regression model, and eventually the 95% Confidence interval and finally affect the accuracy of P-values of each variables. These P-values are the statistical metrics that we use to evaluate the significance of relationships between predictors variables with the responding variable.
+The existence of multicollinearity will increase the standard errors of coefficients estimates in the linear regression model, eventually alter the 95% Confidence intervals and finally affect the accuracy of P-values of each variables in relation to the median house prices. These P-values are the statistical metrics that we use to evaluate the significance of relationships between predictors with the median house prices.
 
-A correlogram is carried out to study the interaction between each pair of the independent variables. 
+A correlogram is graphed to study the interaction between each pair of the independent variables. 
 
 ```{r, fig.width=10, fig.height=8}
 
@@ -356,18 +358,18 @@ corrplot::corrplot(boston_cor, method = "number", type = "lower")
 
 ```
 
-Generally speaking, an absolute correlation value that around and higher than 50% indicates a moderate correlation. The closer to 1 in either positive or negative direction, the higher the relationship between the two variables. As a rule thumb, multicollinearity problem is an issue when the correlation between the two independent variables exceed 0.8 or -0.8. 
+Generally speaking, an absolute correlation value that is around and higher than 50% indicates a moderate correlation. The closer to 1 in either positive or negative direction, the higher the relationship between the two variables. As a rule thumb, multicollinearity problem is an issue when the correlation between the two independent variables exceed 0.8 or -0.8. 
 
-Therefore, multicollinearity issue is likely an issue between "highway index" and "property tax". They have a correlation degree of 0.91. To avoid multicollinearity problem, one should avoid the coexistence of these two variables in a model. This can be achieved by manual selection or auto-selection by machine learning algorithms. Alternatively, a machine learning algorithm that immune to multicollinearity should be selected as one of the model choices during predictive evaluation. 
+Therefore, multicollinearity issue is likely to happen between "highway index" and "property tax". They have a correlation degree of 0.91. To avoid multicollinearity problem, one should avoid the coexistence of the two variables in a model. This can be achieved by manual selection or auto-selection by machine learning algorithms. Alternatively, a machine learning algorithm that immune to multicollinearity should be selected during model building. 
 
-An alternative, popular multicollinearity detection method, called variance inflation factor (VIF) will be performed in next section. This method requires a model to be built. VIF will further confirm the result of multicollinearity detection by this correlogram.  
+An alternative, popular multicollinearity detection method, called variance inflation factor (VIF) will be performed in next section. This method requires a model to be built prior to evaluation. VIF will further confirm the result of multicollinearity detection by this correlogram.  
 
 
 ## 5 Model Building
 
 ### 5.1 Train-test split
 
-This section create data partitions into 80% of train set and 20% test set. The train set will be used to build models and the test set will be used to evaluate the performance of models.
+This section creates data partitions into 80% of train set and 20% test set. The train set will be used to build models and the test set will be used to evaluate the performance of each models.
 
 ```{r}
 set.seed(123)
@@ -396,7 +398,7 @@ model_mlr <- lm(house.value ~., data = train.data)
 
 ```
 
-As mentioned, a VIF is performed. A VIF that exceed 5 indicates a problematic amount of collinearity (James et al. 2014). The result matches the outcome from the previous correlogram which also indicating that highway.index and property.tax should not be coexist in a linear regression model to avoid the issue of multicollinearity.
+As mentioned, a variance inflation factor (VIF) evaluation is performed. A VIF that exceeds 5 indicates a problematic amount of collinearity (James et al. 2014). The result matches the outcome from the previous correlogram that "highway.index" and "property.tax" correlated and should not be coexist in a linear regression model to avoid the issue of multicollinearity.
 
 ```{r}
 
@@ -405,9 +407,10 @@ vif(model_mlr)
 ```
 
 
-Following are two linear models built with the exception of either highway.index or property.tax. Their adjusted R-Squared will be compared and the model with the higher adjusted R2 will be selected.
+Following are two linear models built with the exception of either highway.index or property.tax. Their adjusted R-Squared will be compared and the model with the higher adjusted R-squared will be selected.
 
 ```{r}
+set.seed(123)
 
 model2 <- lm(house.value ~. - highway.index , data = train.data)
 
@@ -416,31 +419,32 @@ summary(model2)
 ```
 
 ```{r}
+set.seed(123)
 
 model3 <- lm(house.value ~. - property.tax , data = train.data)
 
 summary(model3)
 
 ```
-The model without property.tax (model2) has higher adjusted R-squared (R2) at 70.89 as compared to 70.20 of the previous model without highway.index. Additionally, the RSE of this model is 4.947 which is lower than the previous model (model 2) with property tax of 5.005. Therefore, property.tax should be dropped to avoid multicollinearity.   
+The model without property.tax (model 3) has higher adjusted R-squared at 0.708 as compared to 0.7012 of the previous model without highway.index. Additionally, the RSE of this model (model 3) is 4.954 which is lower than the previous model (model 2) built with property tax at 5.012. Therefore, property.tax should be dropped to avoid multicollinearity.   
 
 **Model performance**
 
 * P-value of the F-Statistics of this model is < 0.05, indicating that there is at least of the predictor variable is significantly related to the median house prices.  
 
-* The Adjusted R-squared of this model is 0.7089, which is a good value indicating that this multiple linear regression model is able to explain 71.12% of the variation in the median house prices. 
+* The adjusted R-squared of this model is 0.7091, which is a good value indicating that this multiple linear regression model is able to explain 70.91% of the variation in the median house prices. 
 
-* The Residual standard error (RSE) is 4.927, This corresponds to an error rate of 21.97%, which is acceptable but high enough to investigate a better model for prediction.  
+* The Residual standard error (RSE) is 4.954, This corresponds to an error rate of 22%, which is acceptable but high enough to investigate a better model for prediction.  
  
 ```{r}
 
-4.927/mean(Boston$medv)
+4.954/mean(Boston$medv)
 
 ```
 
 **Insights from coefficient estimates**
 
-Following visualisation indicates the coefficient strength and significance level of each variable in relation to the median house price.  
+Following visualisation indicates the strength of coefficients and significance level of each variable in relation to the median house price.  
 
 ```{r, fig.width=8, fig.height=5}
 
@@ -461,9 +465,9 @@ plot_mlr <- ggplot(coef_plot, aes(y = Estimate, x = fct_reorder(variable, -Estim
   geom_bar(stat = "identity") +
   theme_bw() +
   theme(legend.position = "none",
-        axis.text.x = element_text(angle = 20, size = 10),
+        axis.text.x = element_text(angle = 20, size = 10, hjust = 0.7),
         plot.margin = unit(c(1,1,1,1), "cm")) +
-  geom_text(aes(label = paste0("(", round(Estimate, 2), ")")), vjust = 1 ) +
+  geom_text(aes(label = paste0("(", round(Estimate, 2), ")")), vjust = 1) +
   geom_text(aes(label = sig), size = 8) +
   labs(x = "Variables", 
        y = "Coefficient Estimate",
@@ -477,7 +481,7 @@ plot_mlr
 ```
 Insights from this section: 
 
-* Variables "resid.zone", "age", and "indus.biz" do not have significant effect with the median house prices.
+* Variables "resid.zone", "age", and "indus.biz" do not have significant relationship with the median house prices.
 
 * Variable "room" has the highest significant positive impact on median house prices.
 
@@ -491,17 +495,15 @@ This section describes whether the assumptions of linear regression is fulfilled
 * The relationship between independent variables and the responding variable is non-linear. 
 
 
-
-
 ```{r}
 
 plot(model3, 1)
 
 ```
 
-* The second assumption is that independent variables should be independent from each other. There is multicollinearity problem between "rad" and "tax".  
+* The second assumption is that independent variables should be independent from each other. It is not the case in this dataset as there is multicollinearity problem between "rad" and "tax".  
 
-* Following plot of standardised residual against the fitted values show that the amount of error is not similar at each data point of the linear model and therefore it has a feature of heteroscedasticity. A desired trend is straight line line across the middle of the plot.
+* Following plot the standardised residual against the fitted values shows that the amount of error is not similar at each data point of the linear model and therefore it has a feature of heteroscedasticity. 
 
 
 ```{r}
@@ -509,7 +511,7 @@ plot(model3, 1)
 plot(model3, 3)
 
 ```
-* There is also no multivariate normality shown by a standard Q-Q plot below formed by the multiple linear regression model. An ideal trend would be having all points falling near the straight line in the middle of the plot. 
+* There is also no multivariate normality shown by a standard Q-Q plot below formed by the multiple linear regression model. An ideal trend would be having all points falling near the straight line in the middle of the plot and form a line. 
 
 ```{r}
 plot(model3, 2)
@@ -520,7 +522,7 @@ This dataset has a non-parametric characteristics and therefore a non-parameter 
 
 ### 5.4 Lasso
 
-This section I will still apply a parametric algorithm, Lasso regression, to check out how would the L1-norm lambda regularisation of this method in its predictive power. The performance metrics of this method will also be used as a baseline model to compared with non-parametric algorithm that I am going to apply later.
+This section I will still apply a parametric algorithm, Lasso regression, to check out how would the L1-norm lambda regularisation of this method performs. The performance metrics of this method will be used as a baseline model to compared with non-parametric machine learning algorithms that I am going to apply later.
 
 ```{r, warning=FALSE}
 
@@ -537,7 +539,8 @@ model_lasso <- train(house.value ~., data = boston,
                                             lambda = 10^seq(-3, 3, length = 100)))
 
 ```
-From the lasso, I built a grid that contains many lambda value, and it seems like the best one will close to 0. A best lambda value is the one that having the lowest RMSE.
+
+From above lasso model, I built a grid that contains many lambda value, and it seems like the best one will be closing to 0. A best lambda value is the one that having the lowest RMSE.
 
 ```{r}
 plot(model_lasso)
@@ -551,7 +554,7 @@ model_lasso$bestTune
 
 ```
 
-Interesting, many materials state that Lasso regression should be used when there is multicollinearity issue in the dataset because Lasso will select 1 variable from the highly correlated group. However it is not happening in my case. The "highway.index" and "property.tax" are correlated with a VIF above 5 and therefore they should not coexist in a model as it WOULD affect the accuracy of the coefficients. 
+Interesting, many materials state that Lasso regression should be used when there is multicollinearity issue in the dataset because Lasso will select 1 variable from the highly correlated group. However, it is not happening in my case. The "highway.index" and "property.tax" are correlated with a VIF above 5 and therefore they should not coexist in a model as it would affect the accuracy of the coefficients. 
 
 ```{r}
 coef(model_lasso$finalModel, model_lasso$bestTune$lambda)
@@ -615,20 +618,20 @@ model_pls <- train(house.value ~., data = train.data,
 
 ```
 
-This is a plot showing the how are the numbers of principal components (PCs) in relation to RMSE. The lower the RMSE, the lower the model. The optimum level of PC should be around 8 to 10.
+This is a plot showing how are the numbers of principal components (PCs) in relation to RMSE. The lower the RMSE, the lower the model. The optimum level of PC should be around 8 to 10.
 
 ```{r}
 plot(model_pls)
 
 ```
 
-R can help to identify the best number of components (ncomp) to be used in the model, which is 9. This value will be automatically set as the default ncomp to be used during prediction. 
+R can help to identify the best number of components (ncomp) to be used in the model, which is 9. This value will be automatically set as the default "ncomp" to be used during prediction. 
 
 ```{r}
 model_pls$bestTune
 ```
 
-Internally, this model captures 90.88% of variation in the 9 components and 72.29% of the outcome variation.
+Internally, this model captures 90.89% of variation in the 9 components and 72.21% of the outcome variation.
 
 ```{r}
 summary(model_pls$finalModel)
@@ -652,8 +655,7 @@ caret::RMSE(predictions_pls, test.data$house.value)
 
 ### 5.6 KNN
 
-K-Nearest Neighbors (KNN) is the very first non-parametric model to be implemented. It does not need to comply with parametric assumptions as well as the collinearity issue. However, this methods uses the neighboring points to make the estimation during prediction. 
-
+K-Nearest Neighbors (KNN) is the very first non-parametric model to be implemented. It does not need to comply with parametric assumptions as well as the collinearity issue. This method uses the neighboring points to make estimations during prediction. 
 
 ```{r}
 
@@ -668,7 +670,7 @@ model_knn <- train(house.value ~., data = boston,
 
 ```
 
-Grabbing the nearest 5 neighboring points during internal estimation and prediction had the lowest RMSE. Therefore, it is the optimum "k" nearest point that this model will be used during prediction of the test dataset. 
+Grabbing the nearest 5 neighboring points during internal estimation and prediction had the lowest RMSE. Therefore, it is the optimum "k" nearest point that this model will be using during prediction on the test dataset. 
 
 ```{r}
 plot(model_knn)
@@ -697,9 +699,9 @@ caret::RMSE(predictions_knn, test.data$house.value)
 
 ### 5.7 Decision Tree / CART
 
-Decision tree, also known as CART (Classification and Regression Tree) is my second non-parametric machine learning algorithm that work best in condition when there is highly non-linear relationship between the predictors and the responding variable. Decision tree has a upside-down tree-like structure with decision rules in each of the branch to guide the prediction of new observations. 
+Decision tree, also known as CART (Classification and Regression Tree) is my second non-parametric machine learning algorithm that work should very well in condition when there is highly non-linear relationship between the predictors and the responding variable. Decision tree has a upside-down tree-like structure with decision rules in each of the branch to guide the prediction of new observations. 
 
-I am expecting a better result because decision tree tend to prefer a situation that a few of variables in the variables list are more powerful than the others. This house dataset has this characteristic. Few of the powerful features are nitrogen.oxide, room, and charles.river. This method also immune to multicollinearity.
+I am expecting a better result because decision tree tend to prefer a situation that a few of variables in the variables list are more powerful than the others. This house dataset has this characteristic. Few of the powerful features are nitrogen.oxide, room, and charles.river. This method is also immune to multicollinearity.
 
 
 ```{r, warning=FALSE}
@@ -738,11 +740,11 @@ text(model_DT$finalModel, col = "darkgreen", fancy = F)
 
 ```
 
-Decision tree specifies the variable "room" as the root node (the node at the very top) after out trying all variables. It indicates that "room" leads to the purest two branches compared to other variables. It also means that the information gain for the variable "room" is the highest. We know more about median house prices after looking at "room" compared to other variables. In regression decision tree, the value of each split cutoff point is selected so that residual sum of squared error (RSS) is minimised. 
+Decision tree specifies the variable "room" as the root node (the node at the very top) after trying out all variables. On the root node, it appears that "room" leads to the purest two branches compared to other variables. Formally, It means that the information gain for the variable "room" is the highest. From the root node, we will know more about median house prices after looking at "room" compared to other variables. In regression decision tree, the value of each split cutoff point (for example "room < 6.838") is selected to result the purest branch, or defined that residual sum of squared error (RSS) is minimized. 
+ 
+This computation is iterated at each resulting branches on sub-samples resulting from individual parent nodes until either maximum depth of the tree or when pure branches are achieved. This process is known as recursive partitioning.
 
-This computation is iterated at each resulting branches on sub-samples resulting from individual parent nodes until either maximum depth of the tree or when pure branches are reached - this process is known as recursive partitioning.
-
-Following is an alternative visual showing the exact same information however it shows the number of samples and associated proportion during each split. It is not very important but is an additional information. 
+To improve the visual, following is an alternative visual showing the exact same information as above tree however it shows the number of samples and associated proportion during each split. 
 
 ```{r}
 
@@ -753,7 +755,7 @@ fancyRpartPlot(model_DT$finalModel, palettes = "Oranges")
 
 ```
 
-Following is the decision rules in the model. 
+Following is the decision rules defined in the model. 
 
 ```{r}
 model_DT$finalModel
@@ -771,20 +773,20 @@ caret::RMSE(prediction_DT, test.data$house.value)
 
 ```
 
-Decision tree is a powerful machine learning algorithm however, it do come with its disadvantages. It is because that only one tree is built and therefore its result is highly relied on the training set that used in the split of the decision tree. Therefore there might be significant impact on the tree if there is a small change in the dataset. The lower result above (79.58%) might be because that the decision tree was not generalise well and overfited the training data. 
+Decision tree is a powerful machine learning algorithm. However, it do come with its disadvantages. It is because that only one tree is built and therefore its result is highly relied on the training set that used in the split of the decision tree. Therefore, there might be significant impact on the tree if there is a small change in the dataset. The lower result above (79.58%) might be because that the decision tree was not generalise well and overfit the training data. 
 
-To solve this problem, next section I will build many trees to do a better prediction, it is known as random forest. I will hope to see a boost in prediction accuracy on the test dataset. 
+To solve this problem, next section I will build and aggregate many trees for do a better prediction, it is known as random forest. I will hope to see a boost in prediction accuracy on the test dataset. 
 
 
 ### 5.8 Random Forest
 
-Random forest is known as an ensemble learning or method because it aggregates hundreds of decision trees, averaging the internally built models, and creating a final high-performance predictive model compared to decision tree. 
+Random forest, is also known as an ensemble learning or method because it aggregates many of decision trees, averaging the internally built models, and creating a final high-performance predictive model compared to decision tree. 
 
 This section will grow a high "data-diversity" random forest like many other projects in the world that used Random forest. All trees will not be completely the same. It is because of 2 popular techniques (James et al. 2014, P. Bruce and Bruce 2017): 
 
-* (1) each of the tree randomly grabs a data subset from the input training dataset and averaging the models' results, it is known as bagging or bootstrap aggregating) and, 
+* (1) each of the tree randomly grabs a data subset from the input training dataset and averaging the models' results, it is known as *bagging* or *bootstrap aggregating*) and, 
 
-* (2) each of the tree will have a smaller randomly given group of variables for them to choose when they do their split in their nodes, it is known as bootstrap sampling.
+* (2) each of the tree will be given randomly a smaller number of variables for them to choose when they do their split in their nodes, it is known as *bootstrap sampling*.
 
 
 ```{r}
@@ -801,9 +803,9 @@ model_rf$finalModel
 
 ```
 
-By default, 500 trees were grown to build the random forest model with their results averaged. The internal accuracy is 83.29%, which is considered very good. You will see a much better at 89.9% later when I predict on the test dataset. 
+By default, 500 trees were grown to build the random forest model with their results averaged. The internal accuracy is 83.29%, which is considered very good. You will see a much better at 89.9% (or 90%) later when I predict on the test dataset. 
 
-The optimum number (mtry) of predictor variables randomly selected as variables of choice during each split is 7, automatically discovered by the *caret* package.  
+The optimum number (mtry) of predictor variables randomly selected as variables of choice during each split is 7. Ths value is automatically discovered by the *caret* package.  
 
 ```{r}
 model_rf$bestTune
@@ -832,10 +834,9 @@ plot(varImp(model_rf))
 
 ```
 
+This importance plot created by the random forest algorithm is useful in telling us how far the important features are away from the unimportant ones. I can see that "lstat" which is the proportion of lower status of the population in the community and the number of room by "room" are the two most important features in predicting the median house prices. 
 
-This graph created by the powerful random forest algorithm is useful in telling us how far the important features are away from the unimportant ones. I can see that "lstat" which is the proportion of lower status of the population in the community and the number of room by "room" are the two most important features in predicting the median house prices. 
-
-This result is the same as the results of multiple regression regression in previous section which also showing lstat and room are the two most important features based on P-value. See following summary. 
+This result is the same as the results from multiple regression regression in previous section 5.2, check out following summary tabels. 
 
 ```{r}
 options(scipen = 999)
@@ -853,17 +854,50 @@ summary(model_mlr)$coef %>%
   rownames_to_column(var = "features") %>%
   mutate("no." = row_number()) %>% 
   relocate("no.", .before = features) %>% 
-  filter(features != "(Intercept)") %>% 
-  kbl(caption = "Results from multiple linear regression model") %>% 
+  filter(features != "(Intercept)",
+         Estimate > 0) %>% 
+  kbl(caption = "Factors that Negatively Correlated with House Prices") %>% 
   kable_paper() 
+  
 
 options(scipen = 1)
 
 ```
 
-These results of these two algorithms are not supposed to be the same, for example, the relationships between features and the responding variables in this project is non-linear and the result from multiple linear regression may not be so correct as compared to random forest that can digest non-linearity. Results from both algorithm can be similar (not entire the same) only if predictive power of features are really outcompete others in a significance way.
+```{r}
+options(scipen = 999)
 
-"lstat" and "room" are instead supported by the results of the both algorithms, and therefore it is robust to say "lstat" and "room" are the two most important features in the prediction of median house prices.
+summary(model_mlr)$coef %>% 
+  data.frame() %>% 
+  rename(P_Value = Pr...t..) %>% 
+  arrange(P_Value) %>% 
+  dplyr::select(Estimate, P_Value) %>%  
+  mutate(Significance.ordered = case_when(P_Value < 0.05 & P_Value > 0.01 ~ "* (< 0.05)",
+                                  P_Value < 0.01 & P_Value > 0.001 ~ "** (< 0.01)",
+                                  P_Value < 0.001 ~ "*** (< 0.001)",
+                                  TRUE ~ " ")) %>% 
+  arrange(P_Value) %>% 
+  rownames_to_column(var = "features") %>%
+  mutate("no." = row_number()) %>% 
+  relocate("no.", .before = features) %>% 
+  filter(features != "(Intercept)",
+         Estimate < 0) %>% 
+  kbl(caption = "Factors that Negatively Correlated with House Prices") %>% 
+  kable_paper() 
+  
+
+options(scipen = 1)
+
+```
+
+* Importance plot shows that "room" is the most important variable, which is supported by multiple linear regression summary with indication that this relationship is negative. 
+
+* Importance plot shows that "lstat" is the second most important variable, which is supported by multiple linear regression summary with indication that this relationship is positive. 
+
+
+The results of these two different algorithms usually are not the same. For example, the relationships between features and the responding variables in this project is non-linear and the result from multiple linear regression may not be so correct as compared to random forest that can digest non-linearity. Results from both algorithm could be similar (not entire the same) only if predictive power among features are really outcompete others in a significant way.
+
+Variables "lstat" and "room" are instead supported by the results of the two different algorithms, and therefore it is robust to say "lstat" and "room" are the two most important features in the prediction of median house prices.
 
 ### 5.9 Stochastic gradient boosting (*XGBoost* in R)
 
@@ -913,7 +947,7 @@ caret::RMSE(predictions, test.data$house.value)
 
 ```
 
-This model has result that is not too far away from random forest. Next section will create a graph to compare the performance metrics of all machine learning models.
+This model has results that are not too far away from random forest. Next section will create a graph to compare the performance metrics of all machine learning models I have trained.
 
 
 
@@ -972,48 +1006,48 @@ ggplot(models, aes(x = fct_reorder(Model, -results), y = results, fill = metrics
 
 ```
 
-From this result, I conclude that random forest algorithm has the highest prediction performance on the test dataset in this project. It has the highest good R-squared value (R2, %) at 89.97%, or 90%. 
+From this result, I conclude that random forest algorithm has the highest prediction performance on the randomly sampled test dataset in this project. It has the highest good R-squared value (R2, %) at 89.97%, or 90%. 
 
-This R-squared value means that the predicted outcome values by the Random Forest using the test dataset has a high correlation with the observed values in the test dataset. Alternatively, ~90% similar. Random forest has also the lowest prediction error rate at 13.43% (RMSE divided by the mean of the y variables in test dataset).
+The 89.97% R-squared value means that the predicted outcome values by the Random Forest using the test dataset has a high correlation with the observed values in the test dataset. Alternatively, results are approximately 90% similar. Random forest has also the lowest prediction error rate at 13.43% (RMSE divided by the mean of the y variables in test dataset).
 
 
 
 ## 6 Model for Production
 
-Saving the random forest model for model production with RShiny. 
+This section uses RShiny to produce an online interactive application to make predictions using the random forest algorithm. 
 
-```{r}
-saveRDS(model_rf, "boston_rf_model.rds")
+Demo picture:
 
-```
-
-Saving the random forest model for model production with RShiny.
-
-```{r}
-write_csv(train.data, "train.csv")
-
-```
+![](https://raw.githubusercontent.com/KAR-NG/Predicting-House-Prices-in-Boston_UniqueVersion/main/pic4_shiny.JPG)
 
 
-```{r}
-iris[, -1]
-```
+**Visit this link to use the app:**
 
+https://karhou.shinyapps.io/boston/
 
-(In Progress)
+**Visit this github link to view the codes I used to program this app.**
+
+https://github.com/KAR-NG/Predicting-House-Prices-in-Boston_UniqueVersion/blob/main/app.R
 
 
 
 
 ## 7 Conclusion
 
+In conclusion, 7 different models were built to study this dataset, included multiple linear regression (MLR), Lasso regression, Partial Least Squares (PLS), K-Nearest Neighbor (KNN), Decision tree, random forest, and stochastic gradient boosted random forest (XGBoost). 
+
+* Random forest model had the best predictive power at 90% compared to all other models and should be used for prediction. A RShiny app has been built to make this model into production. 
+
+* The variable "*age*" that stands for "Proportion of owner-occupied units built prior to 1940" and the variable "*indus*" that stands for "Proportion of non-retail business acres per town" are **not related** in the house prices with P higher than 0.05. 
+
+* The **3 most positively related** variables are the *number of rooms* that affects house prices the most with the most significance level (lowest P-value with a value of < 0.001), followed by the *proportion of black community* (P-value <0.001) and the *index of accessibility to radial highway* (P-value <0.001).
+
+* The **3 most negatively related** variables are the *lower status of the population* (percent) (P-value <0.001), followed by the second ranked *nitrogen oxide concentration* (P-value <0.001), and the third negative variable is *crime rate* (P-value < 0.05). The higher the values of these variables, house prices are negatively impacted the most.
+
+* In overall, the most important 2 variables related to the Boston median house prices in the late 70s are the number of room (positive related) and the proportion of lower status population in the community (negative related). 
 
 
-
-
-
-
-
+*Thank you for reading*
 
 ## 8 LEGALITY  
 

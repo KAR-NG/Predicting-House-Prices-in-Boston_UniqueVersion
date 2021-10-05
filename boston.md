@@ -1,4 +1,5 @@
-Boston House Prices - Regression Analysis in Machine Learning
+Boston House Prices \[Unique Version\]- Regression Analysis with Machine
+Learning
 ================
 Kar Ng
 2021
@@ -73,20 +74,21 @@ options(scipen = 0)
 ## 2 INTRODUCTION
 
 This project uses a public dataset named “Boston” from the R package -
-“MASS”. However, I have edited this dataset a bit to make overall
-analysis a little more interesting and unique. First, I changed the
-names of most of the columns into names that are more representative, it
-won’t affect the analysis. Second, I induced some missing values in 2 of
-the 14 columns, “black” and “lstat” and I will use R to impute the
+“MASS”. It is a famous dataset for machine learning. However, I have
+made adjustment to this dataset to make overall analysis interesting and
+unique. First, I changed the names of most of the columns into names
+that are more representative; Second, I induced some missing values in 2
+of the 14 columns, “black” and “lstat”, and I will use R to impute the
 missing values with algorithm.
 
-In short, this Boston housing dataset studies the effects of a range of
-variables on median house prices in Boston in late 70s, United States.
+This Boston housing dataset studies the effects of a range of variables
+on median house prices in Boston in **late 70s**, United States.
 
 I will statistically analyse the dataset and make predictions with
-machine learning algorithms. Then, I will find out the effects of each
-variables on the median house prices and pick a model that has the
-highest predictive power.
+machine learning algorithms. Then, I will study the effects of each
+variables on the median house prices, pick a model that has the highest
+predictive power, and build an online interactive application by using
+RShiny in *section 6 - Model for Production*.
 
 *Highlights of some upcoming graphs*
 
@@ -96,10 +98,8 @@ highest predictive power.
 
 ### 3.1 Data Import
 
-This section import my specially edited dataset, this dataset has been
-uploaded to my github.
-
-Following is 10 rows of data randomly selected from the dataset.
+This section imports the edited version of the dataset. Following is 10
+rows of data randomly selected from the dataset.
 
 ``` r
 boston <- read.csv("boston.csv")
@@ -107,36 +107,40 @@ sample_n(boston, 10)
 ```
 
     ##      X crime.rate resid.zone indus.biz charles.river nitrogen.oxide  room  age
-    ## 1  309    0.49298        0.0      9.90             0          0.544 6.635 82.5
-    ## 2   33    1.38799        0.0      8.14             0          0.538 5.950 82.0
-    ## 3  186    0.06047        0.0      2.46             0          0.488 6.153 68.8
-    ## 4   23    1.23247        0.0      8.14             0          0.538 6.142 91.7
-    ## 5  216    0.19802        0.0     10.59             0          0.489 6.182 42.4
-    ## 6  222    0.40771        0.0      6.20             1          0.507 6.164 91.3
-    ## 7  202    0.03445       82.5      2.03             0          0.415 6.162 38.4
-    ## 8  137    0.32264        0.0     21.89             0          0.624 5.942 93.5
-    ## 9  358    3.84970        0.0     18.10             1          0.770 6.395 91.0
-    ## 10  46    0.17142        0.0      6.91             0          0.448 5.682 33.8
+    ## 1   40    0.02763         75      2.95             0          0.428 6.595 21.8
+    ## 2  126    0.16902          0     25.65             0          0.581 5.986 88.4
+    ## 3  363    3.67822          0     18.10             0          0.770 5.362 96.2
+    ## 4   25    0.75026          0      8.14             0          0.538 5.924 94.1
+    ## 5  322    0.18159          0      7.38             0          0.493 6.376 54.3
+    ## 6  286    0.01096         55      2.25             0          0.389 6.453 31.9
+    ## 7  120    0.14476          0     10.01             0          0.547 5.731 65.2
+    ## 8  294    0.08265          0     13.92             0          0.437 6.127 18.4
+    ## 9  149    2.33099          0     19.58             0          0.871 5.186 93.8
+    ## 10 442    9.72418          0     18.10             0          0.740 6.406 97.2
     ##    dist.to.work highway.index property.tax pt.ratio  black lstat house.value
-    ## 1        3.3175             4          304     18.4 396.90  4.54        22.8
-    ## 2        3.9900             4          307     21.0 232.60 27.71        13.2
-    ## 3        3.2797             3          193     17.8 387.11 13.15        29.6
-    ## 4        3.9769             4          307     21.0 396.90 18.72        15.2
-    ## 5        3.9454             4          277     18.6 393.63  9.47        25.0
-    ## 6        3.0480             8          307     17.4 395.24 21.46        21.7
-    ## 7        6.2700             2          348     14.7 393.77  7.43        24.1
-    ## 8        1.9669             4          437     21.2 378.25 16.90        17.4
-    ## 9        2.5052            24          666     20.2 391.34 13.27        21.7
-    ## 10       5.1004             3          233     17.9 396.90 10.21        19.3
+    ## 1        5.4011             3          252     18.3 395.63  4.32        30.8
+    ## 2        1.9929             2          188     19.1 385.02 14.81        21.4
+    ## 3        2.1036            24          666     20.2 380.79 10.19        20.8
+    ## 4        4.3996             4          307     21.0 394.33 16.30        15.6
+    ## 5        4.5404             5          287     19.6 396.90  6.87        23.1
+    ## 6        7.3073             1          300     15.3 394.72  8.23        22.0
+    ## 7        2.7592             6          432     17.8 391.50 13.61        19.3
+    ## 8        5.5027             4          289     16.0 396.90  8.58        23.9
+    ## 9        1.5296             5          403     14.7 356.99 28.32        17.8
+    ## 10       2.0651            24          666     20.2 385.96 19.52        17.1
 
 ### 3.2 Data Description
 
-The dataset has important information that may affect the price of a
-house. For examples, crime rate, number of rooms in the house, nitrogen
-oxides concentration, its proximity to industrial area, employment
-centers, highways and etc.
+The dataset has important information regarding factors that may affect
+the price of a house in Boston in late 70s. For examples, crime rate,
+number of rooms in the house, nitrogen oxides concentration, its
+proximity to industrial area, employment centers, highways and etc.
 
-Following are the description of features.
+The unit of the house value is “median house price”. Believing this
+median values is extracted from multiple houses in the respective
+regions in the city.
+
+Following is the data description adapted from the relevant R package.
 
 ``` r
 Variables <- names(boston[2:15])
@@ -290,7 +294,7 @@ Median value of owner-occupied homes in per $1000s.
 ### 3.3 Data Exploration
 
 The dataset has 506 rows of observations and 14 columns of variables.
-All variables are numerically associated.
+All variables are in numerical form.
 
 ``` r
 glimpse(boston) 
@@ -314,16 +318,16 @@ glimpse(boston)
     ## $ lstat          <dbl> 4.98, 9.14, 4.03, 2.94, 5.33, 5.21, 12.43, 19.15, 29.93~
     ## $ house.value    <dbl> 24.0, 21.6, 34.7, 33.4, 36.2, 28.7, 22.9, 27.1, 16.5, 1~
 
-However, from the data description, “charles.river” is either 0 or 1,
-and therefore it should be a categorical variable with a factor type in
-R. The first variable has to be removed, and it will be done in the next
-data cleaning section.
+From observation, “charles.river” is either 0 or 1, and therefore it
+should be a categorical variable and it should be assigned with factor
+type. The first variable, “x”, has to be removed because it is just row
+number and irrelevant.
 
 There are 12 and 17 missing data in the “black” and “lstat” column.
 Fortunately, the completeness of these two variables are 97.6% and
 96.6%. It is a matter of choice whether one wants to remove these values
 or apply imputation techniques. I will go with the later as it is my
-purpose of inducing these missing values.
+purpose to induce these missing values using imputation model using R.
 
 ``` r
 skim_without_charts(boston)
@@ -928,7 +932,8 @@ house.value
 </table>
 
 Alternatively, I can examine missing data in the dataset by following
-code.
+code. There are 12 missing data in the column “black”, and 17 from the
+column “lstat”.
 
 ``` r
 colSums(is.na(boston))
@@ -990,8 +995,8 @@ summary(boston)
 
 ## 4 DATA CLEANING
 
-This part convert the dataset into a analysis-ready format for machine
-learning.
+This part converts the dataset into a format that is appropriate for
+analysis or storage.
 
 Depending on context, my usual cleaning techniques include but not
 limited to the following:
@@ -1007,7 +1012,7 @@ limited to the following:
 -   Factorise variables (or known as features).  
 -   Feature engineering if required.
 
-Cleaning task of this dataset identified from previous section:
+Several specific cleaning tasks identified from the previous section:
 
 -   Remove the first column “x”.  
 -   Convert “charles.river” from integer into factor.  
@@ -1015,8 +1020,8 @@ Cleaning task of this dataset identified from previous section:
 
 ### 4.1 Column removal and factorise
 
-Following code remove first column “X” which is the row ID, and
-factorise the binary column, “charles.river”.
+Following code remove first column “X” which is the row number, and
+factorise the binary column, “charles.river” to convert it into factor.
 
 ``` r
 boston <- boston %>% 
@@ -1052,8 +1057,8 @@ colSums(is.na(boston.dummy))
     ##               0               0              12              17
 
 Now, I am building an imputation model that uses all columns in the
-dataset and to predict these missing values, by the method of “Bag
-Decision Tree”.
+dataset to predict these missing values, by the method of “Bagged
+Decision Trees”.
 
 ``` r
 # Imputation
@@ -1062,7 +1067,7 @@ imputation.model <- preProcess(boston.dummy, method = "bagImpute")
 imputed.boston <- imputation.model %>% predict(boston.dummy)
 ```
 
-And the missing values have been filled up by imputation.
+And the missing values have now been filled up by imputation.
 
 ``` r
 colSums(is.na(imputed.boston))
@@ -1075,7 +1080,7 @@ colSums(is.na(imputed.boston))
     ##    property.tax        pt.ratio           black           lstat 
     ##               0               0               0               0
 
-Over-writing the original “black” and “lstat” with the newly imputed new
+Over-writing the original “black” and “lstat” with the newly imputed
 “black” and “lstat” columns.
 
 ``` r
@@ -1083,7 +1088,7 @@ boston$black <- imputed.boston[, 13]
 boston$lstat <- imputed.boston[, 14]
 ```
 
-Now, there is no more missing values in the data.
+Now, there are no more missing values in the dataset.
 
 ``` r
 colSums(is.na(boston))
@@ -1101,7 +1106,35 @@ these variables in predicting the median house prices. I will keep all
 variables at this point. I will make variable selection again in later
 analysis.
 
-Now, the dataset is ready for next stage.
+Let’s have a final glimpse of the data again.
+
+``` r
+# Convert 2 integers variable "highway.index" and "property.tax " to double type. 
+
+boston <- boston %>% 
+  mutate_if(is.integer, as.double)
+
+glimpse(boston)
+```
+
+    ## Rows: 506
+    ## Columns: 14
+    ## $ crime.rate     <dbl> 0.00632, 0.02731, 0.02729, 0.03237, 0.06905, 0.02985, 0~
+    ## $ resid.zone     <dbl> 18.0, 0.0, 0.0, 0.0, 0.0, 0.0, 12.5, 12.5, 12.5, 12.5, ~
+    ## $ indus.biz      <dbl> 2.31, 7.07, 7.07, 2.18, 2.18, 2.18, 7.87, 7.87, 7.87, 7~
+    ## $ charles.river  <fct> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0~
+    ## $ nitrogen.oxide <dbl> 0.538, 0.469, 0.469, 0.458, 0.458, 0.458, 0.524, 0.524,~
+    ## $ room           <dbl> 6.575, 6.421, 7.185, 6.998, 7.147, 6.430, 6.012, 6.172,~
+    ## $ age            <dbl> 65.2, 78.9, 61.1, 45.8, 54.2, 58.7, 66.6, 96.1, 100.0, ~
+    ## $ dist.to.work   <dbl> 4.0900, 4.9671, 4.9671, 6.0622, 6.0622, 6.0622, 5.5605,~
+    ## $ highway.index  <dbl> 1, 2, 2, 3, 3, 3, 5, 5, 5, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4~
+    ## $ property.tax   <dbl> 296, 242, 242, 222, 222, 222, 311, 311, 311, 311, 311, ~
+    ## $ pt.ratio       <dbl> 15.3, 17.8, 17.8, 18.7, 18.7, 18.7, 15.2, 15.2, 15.2, 1~
+    ## $ black          <dbl> 396.9000, 396.9000, 392.8300, 394.6300, 396.9000, 387.2~
+    ## $ lstat          <dbl> 4.98000, 9.14000, 4.03000, 2.94000, 5.33000, 5.21000, 1~
+    ## $ house.value    <dbl> 24.0, 21.6, 34.7, 33.4, 36.2, 28.7, 22.9, 27.1, 16.5, 1~
+
+Perfection.
 
 ## 5 EXPLORATORY DATA ANALYSIS (EDA)
 
@@ -1115,33 +1148,35 @@ bos <- boston %>%
 
 ### 5.1 Distribution Study
 
-This part is important in studying at the distribution of the data of
-each variable (or feature). In general, any non-skewed distribution that
-closes to a Gaussian distribution would be useful for the prediction of
-the house value. They would have good relation with the responding
-variable.
+This section studies data distribution of each variables. In general,
+any non-skewed distribution that closes to a Gaussian distribution would
+be more useful for the prediction of the house value. They would have
+good relation with the responding variable - “house.value”.
 
 ``` r
 ggplot(bos, aes(x = value, fill = key)) +
   geom_histogram(colour = "white", bins = 20) +
-  facet_wrap(~ key, scale = "free") +
+  facet_wrap(~ key, scale = "free") + 
   theme(legend.position = "none")
 ```
 
-![](boston_files/figure-gfm/unnamed-chunk-16-1.png)<!-- --> Insight:
+![](boston_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
 
--   The *charles.river* has a binary distribution with value of either 1
+Insight:
+
+-   The *charles.river* has a binary distribution with value in either 1
     or 0.  
--   The *rm* has a distribution that close to Gaussian distribution.  
--   The y variable *house.value* has a near Gaussian distribution which
-    is a good sign.  
--   Many variables except *chas* and *rm* seems to have skewed to both
-    directions.
+-   The *room* has a distribution that closes to Gaussian
+    distribution.  
+-   The y variable *house.value* has a nearly Gaussian distributed
+    distribution which is a good sign.  
+-   Many variables except *charles.river* and *room* seems to have
+    skewed to both directions.
 
-This part would help in manually selection of features when trying to
-make the prediction based on traditional linear regression that
-sensitive to outliers. Outliers are probably the reasons causing these
-skews. However, choosing a type of machine learning model that robust to
+This part would help in manual selection of features when trying to make
+the prediction based on traditional linear regression that sensitive to
+outliers. Outliers are probably the reasons causing these skews.
+However, choosing a type of machine learning model that robust to
 outliers, such as decision tree, will be an alternative powerful option.
 
 ### 5.2 Outliers Detection
@@ -1155,15 +1190,16 @@ ggplot(bos, aes(x = value, fill = key)) +
   theme(legend.position = "none")
 ```
 
-![](boston_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+![](boston_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
-Outliers exists in many variables include *black, crim, dis, lstat,
-medv, ptratio, zn,* and even in the Gaussian distribtued *rm*。
+Outliers exists in many variables include *black, crime.rate,
+dist.to.work, lstat, house.value, ptratio, resid.zone,* and even in the
+Gaussian distributed *room*。
 
-The distribution and box plots show that the assumptions of linear
-regression have been violated and thus a non-linear regression would
-perform better than linear regression algorithm, such as KNN, decision
-tree,
+The distribution plots and box plots show that the assumptions of linear
+regression have been violated and therefore a non-linear regression
+would perform better than linear regression algorithm, such as KNN and
+tree-base algorithms.
 
 ### 5.3 Relationships
 
@@ -1190,19 +1226,19 @@ ggplot(bos2, aes(x = result, y = house.value, colour = variable)) +
        title = "The Impact of Environmental Features on Median House Prices")
 ```
 
-![](boston_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+![](boston_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
 
 Insights:
 
 -   The variables that related (either positive or negative) the most
-    with the median house prices are “room”, “lstat”, pt.ratio, and
-    probably resid.zone.
+    with the median house prices are “*room*”, “*lstat*”, “*pt.ratio*”,
+    and probably “*resid.zone*”.
 
--   Relationships of other variables with the median house price are not
-    as much.
+-   The relationships of other variables with the median house price are
+    not as much.
 
--   The relationship between the median house prices and each of the
-    independent variables is not linear.
+-   The relationships between the median house prices and each of the
+    independent variables are not linear.
 
 ### 5.4 Multicollinearity
 
@@ -1210,17 +1246,17 @@ This section tests for the existence of multicollinearity within the
 dataset. It is a problem when two or more predictor variables are
 correlated with each other. One of the assumption of linear regression
 is to have predictor variables independent from each other.
+Multicollinearity can violate this assumption.
 
-Therefore, multicollinearity can violate this assumption. The existence
-of multicollinearity will increase the standard errors of coefficients
-estimates in the linear regression model, and eventually the 95%
-Confidence interval and finally affect the accuracy of P-values of each
-variables. These P-values are the statistical metrics that we use to
-evaluate the significance of relationships between predictors variables
-with the responding variable.
+The existence of multicollinearity will increase the standard errors of
+coefficients estimates in the linear regression model, eventually alter
+the 95% Confidence intervals and finally affect the accuracy of P-values
+of each variables in relation to the median house prices. These P-values
+are the statistical metrics that we use to evaluate the significance of
+relationships between predictors with the median house prices.
 
-A correlogram is carried out to study the interaction between each pair
-of the independent variables.
+A correlogram is graphed to study the interaction between each pair of
+the independent variables.
 
 ``` r
 boston_cor <- boston %>% 
@@ -1230,35 +1266,36 @@ boston_cor <- boston %>%
 corrplot::corrplot(boston_cor, method = "number", type = "lower")
 ```
 
-![](boston_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+![](boston_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
 
-Generally speaking, an absolute correlation value that around and higher
-than 50% indicates a moderate correlation. The closer to 1 in either
-positive or negative direction, the higher the relationship between the
-two variables. As a rule thumb, multicollinearity problem is an issue
-when the correlation between the two independent variables exceed 0.8 or
--0.8.
+Generally speaking, an absolute correlation value that is around and
+higher than 50% indicates a moderate correlation. The closer to 1 in
+either positive or negative direction, the higher the relationship
+between the two variables. As a rule thumb, multicollinearity problem is
+an issue when the correlation between the two independent variables
+exceed 0.8 or -0.8.
 
-Therefore, multicollinearity issue is likely an issue between “highway
+Therefore, multicollinearity issue is likely to happen between “highway
 index” and “property tax”. They have a correlation degree of 0.91. To
-avoid multicollinearity problem, one should avoid the coexistence of
-these two variables in a model. This can be achieved by manual selection
-or auto-selection by machine learning algorithms. Alternatively, a
-machine learning algorithm that immune to multicollinearity should be
-selected as one of the model choices during predictive evaluation.
+avoid multicollinearity problem, one should avoid the coexistence of the
+two variables in a model. This can be achieved by manual selection or
+auto-selection by machine learning algorithms. Alternatively, a machine
+learning algorithm that immune to multicollinearity should be selected
+during model building.
 
 An alternative, popular multicollinearity detection method, called
 variance inflation factor (VIF) will be performed in next section. This
-method requires a model to be built. VIF will further confirm the result
-of multicollinearity detection by this correlogram.
+method requires a model to be built prior to evaluation. VIF will
+further confirm the result of multicollinearity detection by this
+correlogram.
 
 ## 5 Model Building
 
 ### 5.1 Train-test split
 
-This section create data partitions into 80% of train set and 20% test
+This section creates data partitions into 80% of train set and 20% test
 set. The train set will be used to build models and the test set will be
-used to evaluate the performance of models.
+used to evaluate the performance of each models.
 
 ``` r
 set.seed(123)
@@ -1284,28 +1321,31 @@ variables on the median house prices.
 model_mlr <- lm(house.value ~., data = train.data)
 ```
 
-As mentioned, a VIF is performed. A VIF that exceed 5 indicates a
-problematic amount of collinearity (James et al. 2014). The result
-matches the outcome from the previous correlogram which also indicating
-that highway.index and property.tax should not be coexist in a linear
-regression model to avoid the issue of multicollinearity.
+As mentioned, a variance inflation factor (VIF) evaluation is performed.
+A VIF that exceeds 5 indicates a problematic amount of collinearity
+(James et al. 2014). The result matches the outcome from the previous
+correlogram that “highway.index” and “property.tax” correlated and
+should not be coexist in a linear regression model to avoid the issue of
+multicollinearity.
 
 ``` r
 vif(model_mlr)
 ```
 
     ##     crime.rate     resid.zone      indus.biz  charles.river nitrogen.oxide 
-    ##       1.850279       2.322754       3.955217       1.066781       4.449173 
+    ##       1.851747       2.322910       3.954998       1.066698       4.448657 
     ##           room            age   dist.to.work  highway.index   property.tax 
-    ##       1.950783       3.219681       4.064030       8.151024       9.660518 
+    ##       1.952910       3.223066       4.063831       8.150571       9.660433 
     ##       pt.ratio          black          lstat 
-    ##       1.851243       1.355735       3.183101
+    ##       1.851009       1.354782       3.168298
 
 Following are two linear models built with the exception of either
 highway.index or property.tax. Their adjusted R-Squared will be compared
-and the model with the higher adjusted R2 will be selected.
+and the model with the higher adjusted R-squared will be selected.
 
 ``` r
+set.seed(123)
+
 model2 <- lm(house.value ~. - highway.index , data = train.data)
 
 summary(model2)
@@ -1316,32 +1356,34 @@ summary(model2)
     ## lm(formula = house.value ~ . - highway.index, data = train.data)
     ## 
     ## Residuals:
-    ##     Min      1Q  Median      3Q     Max 
-    ## -15.204  -2.647  -0.568   1.519  30.265 
+    ##      Min       1Q   Median       3Q      Max 
+    ## -15.1601  -2.6479  -0.5569   1.5288  30.0735 
     ## 
     ## Coefficients:
     ##                  Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)     2.996e+01  5.626e+00   5.325 1.70e-07 ***
-    ## crime.rate     -5.522e-02  3.942e-02  -1.401  0.16210    
-    ## resid.zone      3.176e-02  1.655e-02   1.919  0.05570 .  
-    ## indus.biz      -8.720e-02  7.038e-02  -1.239  0.21610    
-    ## charles.river1  2.767e+00  9.725e-01   2.845  0.00467 ** 
-    ## nitrogen.oxide -1.484e+01  4.480e+00  -3.313  0.00101 ** 
-    ## room            3.917e+00  4.694e-01   8.344 1.23e-15 ***
-    ## age             2.939e-04  1.611e-02   0.018  0.98546    
-    ## dist.to.work   -1.422e+00  2.399e-01  -5.928 6.70e-09 ***
-    ## property.tax    2.365e-03  2.726e-03   0.868  0.38614    
-    ## pt.ratio       -8.555e-01  1.539e-01  -5.559 5.01e-08 ***
-    ## black           9.991e-03  3.037e-03   3.290  0.00109 ** 
-    ## lstat          -5.170e-01  6.264e-02  -8.253 2.35e-15 ***
+    ## (Intercept)     2.996e+01  5.633e+00   5.319 1.75e-07 ***
+    ## crime.rate     -5.498e-02  3.947e-02  -1.393 0.164355    
+    ## resid.zone      3.189e-02  1.656e-02   1.925 0.054932 .  
+    ## indus.biz      -8.744e-02  7.043e-02  -1.241 0.215177    
+    ## charles.river1  2.781e+00  9.732e-01   2.857 0.004501 ** 
+    ## nitrogen.oxide -1.494e+01  4.483e+00  -3.332 0.000945 ***
+    ## room            3.921e+00  4.701e-01   8.340 1.26e-15 ***
+    ## age             1.924e-04  1.613e-02   0.012 0.990492    
+    ## dist.to.work   -1.423e+00  2.400e-01  -5.929 6.65e-09 ***
+    ## property.tax    2.313e-03  2.727e-03   0.848 0.396935    
+    ## pt.ratio       -8.568e-01  1.540e-01  -5.564 4.88e-08 ***
+    ## black           1.007e-02  3.039e-03   3.313 0.001010 ** 
+    ## lstat          -5.138e-01  6.256e-02  -8.213 3.13e-15 ***
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
-    ## Residual standard error: 4.994 on 394 degrees of freedom
-    ## Multiple R-squared:  0.712,  Adjusted R-squared:  0.7032 
-    ## F-statistic: 81.17 on 12 and 394 DF,  p-value: < 2.2e-16
+    ## Residual standard error: 4.998 on 394 degrees of freedom
+    ## Multiple R-squared:  0.7116, Adjusted R-squared:  0.7028 
+    ## F-statistic:    81 on 12 and 394 DF,  p-value: < 2.2e-16
 
 ``` r
+set.seed(123)
+
 model3 <- lm(house.value ~. - property.tax , data = train.data)
 
 summary(model3)
@@ -1353,35 +1395,36 @@ summary(model3)
     ## 
     ## Residuals:
     ##      Min       1Q   Median       3Q      Max 
-    ## -15.4847  -2.9822  -0.5215   1.6722  29.3614 
+    ## -15.4425  -2.9579  -0.5023   1.6788  29.1700 
     ## 
     ## Coefficients:
     ##                  Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)     34.804341   5.753725   6.049 3.39e-09 ***
-    ## crime.rate      -0.096447   0.040321  -2.392 0.017226 *  
-    ## resid.zone       0.028069   0.015999   1.754 0.080129 .  
-    ## indus.biz       -0.092565   0.066248  -1.397 0.163129    
-    ## charles.river1   2.684508   0.958187   2.802 0.005335 ** 
-    ## nitrogen.oxide -18.323594   4.448146  -4.119 4.63e-05 ***
-    ## room             3.733228   0.467605   7.984 1.57e-14 ***
-    ## age              0.003685   0.015956   0.231 0.817495    
-    ## dist.to.work    -1.408771   0.237088  -5.942 6.20e-09 ***
-    ## highway.index    0.152299   0.047849   3.183 0.001574 ** 
-    ## pt.ratio        -0.999051   0.154129  -6.482 2.71e-10 ***
-    ## black            0.011132   0.003008   3.701 0.000245 ***
-    ## lstat           -0.521433   0.061915  -8.422 6.99e-16 ***
+    ## (Intercept)     34.786848   5.761530   6.038 3.61e-09 ***
+    ## crime.rate      -0.096160   0.040374  -2.382 0.017706 *  
+    ## resid.zone       0.028161   0.016014   1.759 0.079423 .  
+    ## indus.biz       -0.093119   0.066305  -1.404 0.160988    
+    ## charles.river1   2.699898   0.959018   2.815 0.005118 ** 
+    ## nitrogen.oxide -18.413445   4.451931  -4.136 4.32e-05 ***
+    ## room             3.739067   0.468279   7.985 1.56e-14 ***
+    ## age              0.003536   0.015979   0.221 0.824962    
+    ## dist.to.work    -1.410283   0.237298  -5.943 6.16e-09 ***
+    ## highway.index    0.151276   0.047886   3.159 0.001705 ** 
+    ## pt.ratio        -1.000163   0.154260  -6.484 2.68e-10 ***
+    ## black            0.011205   0.003009   3.723 0.000225 ***
+    ## lstat           -0.517955   0.061845  -8.375 9.79e-16 ***
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
-    ## Residual standard error: 4.936 on 394 degrees of freedom
-    ## Multiple R-squared:  0.7187, Adjusted R-squared:  0.7101 
-    ## F-statistic: 83.88 on 12 and 394 DF,  p-value: < 2.2e-16
+    ## Residual standard error: 4.941 on 394 degrees of freedom
+    ## Multiple R-squared:  0.7182, Adjusted R-squared:  0.7096 
+    ## F-statistic: 83.67 on 12 and 394 DF,  p-value: < 2.2e-16
 
-The model without property.tax (model2) has higher adjusted R-squared
-(R2) at 70.89 as compared to 70.20 of the previous model without
-highway.index. Additionally, the RSE of this model is 4.947 which is
-lower than the previous model (model 2) with property tax of 5.005.
-Therefore, property.tax should be dropped to avoid multicollinearity.
+The model without property.tax (model 3) has higher adjusted R-squared
+at 0.708 as compared to 0.7012 of the previous model without
+highway.index. Additionally, the RSE of this model (model 3) is 4.954
+which is lower than the previous model (model 2) built with property tax
+at 5.012. Therefore, property.tax should be dropped to avoid
+multicollinearity.
 
 **Model performance**
 
@@ -1389,23 +1432,23 @@ Therefore, property.tax should be dropped to avoid multicollinearity.
     that there is at least of the predictor variable is significantly
     related to the median house prices.
 
--   The Adjusted R-squared of this model is 0.7089, which is a good
+-   The adjusted R-squared of this model is 0.7091, which is a good
     value indicating that this multiple linear regression model is able
-    to explain 71.12% of the variation in the median house prices.
+    to explain 70.91% of the variation in the median house prices.
 
--   The Residual standard error (RSE) is 4.927, This corresponds to an
-    error rate of 21.97%, which is acceptable but high enough to
+-   The Residual standard error (RSE) is 4.954, This corresponds to an
+    error rate of 22%, which is acceptable but high enough to
     investigate a better model for prediction.
 
 ``` r
-4.927/mean(Boston$medv)
+4.954/mean(Boston$medv)
 ```
 
-    ## [1] 0.218659
+    ## [1] 0.2198572
 
 **Insights from coefficient estimates**
 
-Following visualisation indicates the coefficient strength and
+Following visualisation indicates the strength of coefficients and
 significance level of each variable in relation to the median house
 price.
 
@@ -1427,9 +1470,9 @@ plot_mlr <- ggplot(coef_plot, aes(y = Estimate, x = fct_reorder(variable, -Estim
   geom_bar(stat = "identity") +
   theme_bw() +
   theme(legend.position = "none",
-        axis.text.x = element_text(angle = 20, size = 10),
+        axis.text.x = element_text(angle = 20, size = 10, hjust = 0.7),
         plot.margin = unit(c(1,1,1,1), "cm")) +
-  geom_text(aes(label = paste0("(", round(Estimate, 2), ")")), vjust = 1 ) +
+  geom_text(aes(label = paste0("(", round(Estimate, 2), ")")), vjust = 1) +
   geom_text(aes(label = sig), size = 8) +
   labs(x = "Variables", 
        y = "Coefficient Estimate",
@@ -1441,11 +1484,11 @@ plot_mlr <- ggplot(coef_plot, aes(y = Estimate, x = fct_reorder(variable, -Estim
 plot_mlr
 ```
 
-![](boston_files/figure-gfm/unnamed-chunk-26-1.png)<!-- --> Insights
+![](boston_files/figure-gfm/unnamed-chunk-27-1.png)<!-- --> Insights
 from this section:
 
 -   Variables “resid.zone”, “age”, and “indus.biz” do not have
-    significant effect with the median house prices.
+    significant relationship with the median house prices.
 
 -   Variable “room” has the highest significant positive impact on
     median house prices.
@@ -1465,32 +1508,32 @@ fulfilled.
 plot(model3, 1)
 ```
 
-![](boston_files/figure-gfm/unnamed-chunk-27-1.png)<!-- -->
+![](boston_files/figure-gfm/unnamed-chunk-28-1.png)<!-- -->
 
 -   The second assumption is that independent variables should be
-    independent from each other. There is multicollinearity problem
-    between “rad” and “tax”.
+    independent from each other. It is not the case in this dataset as
+    there is multicollinearity problem between “rad” and “tax”.
 
--   Following plot of standardised residual against the fitted values
-    show that the amount of error is not similar at each data point of
+-   Following plot the standardised residual against the fitted values
+    shows that the amount of error is not similar at each data point of
     the linear model and therefore it has a feature of
-    heteroscedasticity. A desired trend is straight line line across the
-    middle of the plot.
+    heteroscedasticity.
 
 ``` r
 plot(model3, 3)
 ```
 
-![](boston_files/figure-gfm/unnamed-chunk-28-1.png)<!-- --> \* There is
+![](boston_files/figure-gfm/unnamed-chunk-29-1.png)<!-- --> \* There is
 also no multivariate normality shown by a standard Q-Q plot below formed
 by the multiple linear regression model. An ideal trend would be having
-all points falling near the straight line in the middle of the plot.
+all points falling near the straight line in the middle of the plot and
+form a line.
 
 ``` r
 plot(model3, 2)
 ```
 
-![](boston_files/figure-gfm/unnamed-chunk-29-1.png)<!-- -->
+![](boston_files/figure-gfm/unnamed-chunk-30-1.png)<!-- -->
 
 This dataset has a non-parametric characteristics and therefore a
 non-parameter machine learning prediction model should be selected.
@@ -1499,9 +1542,9 @@ non-parameter machine learning prediction model should be selected.
 
 This section I will still apply a parametric algorithm, Lasso
 regression, to check out how would the L1-norm lambda regularisation of
-this method in its predictive power. The performance metrics of this
-method will also be used as a baseline model to compared with
-non-parametric algorithm that I am going to apply later.
+this method performs. The performance metrics of this method will be
+used as a baseline model to compared with non-parametric machine
+learning algorithms that I am going to apply later.
 
 ``` r
 set.seed(123)
@@ -1517,15 +1560,15 @@ model_lasso <- train(house.value ~., data = boston,
                                             lambda = 10^seq(-3, 3, length = 100)))
 ```
 
-From the lasso, I built a grid that contains many lambda value, and it
-seems like the best one will close to 0. A best lambda value is the one
-that having the lowest RMSE.
+From above lasso model, I built a grid that contains many lambda value,
+and it seems like the best one will be closing to 0. A best lambda value
+is the one that having the lowest RMSE.
 
 ``` r
 plot(model_lasso)
 ```
 
-![](boston_files/figure-gfm/unnamed-chunk-31-1.png)<!-- -->
+![](boston_files/figure-gfm/unnamed-chunk-32-1.png)<!-- -->
 
 R *caret* package automatically identified the best lambda for me which
 is 0.0284.
@@ -1539,10 +1582,10 @@ model_lasso$bestTune
 
 Interesting, many materials state that Lasso regression should be used
 when there is multicollinearity issue in the dataset because Lasso will
-select 1 variable from the highly correlated group. However it is not
+select 1 variable from the highly correlated group. However, it is not
 happening in my case. The “highway.index” and “property.tax” are
 correlated with a VIF above 5 and therefore they should not coexist in a
-model as it WOULD affect the accuracy of the coefficients.
+model as it would affect the accuracy of the coefficients.
 
 ``` r
 coef(model_lasso$finalModel, model_lasso$bestTune$lambda)
@@ -1550,20 +1593,20 @@ coef(model_lasso$finalModel, model_lasso$bestTune$lambda)
 
     ## 14 x 1 sparse Matrix of class "dgCMatrix"
     ##                           s1
-    ## (Intercept)     3.328874e+01
-    ## crime.rate     -9.726921e-02
-    ## resid.zone      4.095167e-02
+    ## (Intercept)     3.326632e+01
+    ## crime.rate     -9.716050e-02
+    ## resid.zone      4.102652e-02
     ## indus.biz       .           
-    ## charles.river1  2.703926e+00
-    ## nitrogen.oxide -1.661584e+01
-    ## room            3.970854e+00
-    ## age            -4.397392e-04
-    ## dist.to.work   -1.387345e+00
-    ## highway.index   2.507296e-01
-    ## property.tax   -9.839848e-03
-    ## pt.ratio       -9.365621e-01
-    ## black           1.025205e-02
-    ## lstat          -4.941711e-01
+    ## charles.river1  2.717758e+00
+    ## nitrogen.oxide -1.669319e+01
+    ## room            3.975616e+00
+    ## age            -4.501236e-04
+    ## dist.to.work   -1.387331e+00
+    ## highway.index   2.499407e-01
+    ## property.tax   -9.864180e-03
+    ## pt.ratio       -9.366091e-01
+    ## black           1.028716e-02
+    ## lstat          -4.915874e-01
 
 It is likely that a the best lambda is determined based on the lowest
 point of RMSE. Therefore, I initiate a trade-off here. I manually
@@ -1587,20 +1630,20 @@ coef(model_lasso$finalModel, model_lasso$bestTune$lambda)
 
     ## 14 x 1 sparse Matrix of class "dgCMatrix"
     ##                           s1
-    ## (Intercept)     22.612235661
-    ## crime.rate      -0.041871791
-    ## resid.zone       0.016989709
-    ## indus.biz       -0.010193760
-    ## charles.river1   2.482085360
-    ## nitrogen.oxide -10.032132272
-    ## room             4.304678533
+    ## (Intercept)     22.597158818
+    ## crime.rate      -0.041784143
+    ## resid.zone       0.017023150
+    ## indus.biz       -0.010704601
+    ## charles.river1   2.497219549
+    ## nitrogen.oxide -10.119376387
+    ## room             4.309445180
     ## age              .          
-    ## dist.to.work    -0.849217839
-    ## highway.index    0.005544948
+    ## dist.to.work    -0.849512857
+    ## highway.index    0.004578149
     ## property.tax     .          
-    ## pt.ratio        -0.833231153
-    ## black            0.008735411
-    ## lstat           -0.493180455
+    ## pt.ratio        -0.833521615
+    ## black            0.008769646
+    ## lstat           -0.490496369
 
 Following compute the R2 and RMSE of Lasso from predicting the test
 data. It will be recorded in the last section for a grand model
@@ -1619,13 +1662,13 @@ RMSE_lasso <- RMSE(prediction_lasso, test.data$house.value)
 R2_lasso
 ```
 
-    ## [1] 0.7653185
+    ## [1] 0.7653138
 
 ``` r
 RMSE_lasso
 ```
 
-    ## [1] 4.65962
+    ## [1] 4.659806
 
 ### 5.5 PLS
 
@@ -1647,19 +1690,19 @@ model_pls <- train(house.value ~., data = train.data,
                    tuneLength = 10)
 ```
 
-This is a plot showing the how are the numbers of principal components
-(PCs) in relation to RMSE. The lower the RMSE, the lower the model. The
+This is a plot showing how are the numbers of principal components (PCs)
+in relation to RMSE. The lower the RMSE, the lower the model. The
 optimum level of PC should be around 8 to 10.
 
 ``` r
 plot(model_pls)
 ```
 
-![](boston_files/figure-gfm/unnamed-chunk-37-1.png)<!-- -->
+![](boston_files/figure-gfm/unnamed-chunk-38-1.png)<!-- -->
 
 R can help to identify the best number of components (ncomp) to be used
 in the model, which is 9. This value will be automatically set as the
-default ncomp to be used during prediction.
+default “ncomp” to be used during prediction.
 
 ``` r
 model_pls$bestTune
@@ -1668,8 +1711,8 @@ model_pls$bestTune
     ##   ncomp
     ## 9     9
 
-Internally, this model captures 90.88% of variation in the 9 components
-and 72.29% of the outcome variation.
+Internally, this model captures 90.89% of variation in the 9 components
+and 72.21% of the outcome variation.
 
 ``` r
 summary(model_pls$finalModel)
@@ -1681,11 +1724,11 @@ summary(model_pls$finalModel)
     ## Number of components considered: 9
     ## TRAINING: % variance explained
     ##           1 comps  2 comps  3 comps  4 comps  5 comps  6 comps  7 comps
-    ## X           46.92    57.25    64.46    69.94    75.74    79.79    83.20
-    ## .outcome    48.86    69.23    70.71    71.69    72.10    72.24    72.33
+    ## X           46.89    57.23    64.44    69.92    75.72    79.80    83.18
+    ## .outcome    48.86    69.19    70.66    71.64    72.05    72.19    72.28
     ##           8 comps  9 comps
-    ## X           85.83    90.88
-    ## .outcome    72.40    72.41
+    ## X           85.80    90.87
+    ## .outcome    72.35    72.36
 
 In predicting the test variable, PLS has done a little better job than
 lasso in terms of R2 and RMSE. These metrics will be recorded for final
@@ -1701,20 +1744,20 @@ predictions_pls <- model_pls %>% predict(test.data)
 caret::R2(predictions_pls, test.data$house.value)
 ```
 
-    ## [1] 0.7689151
+    ## [1] 0.7688283
 
 ``` r
 caret::RMSE(predictions_pls, test.data$house.value)
 ```
 
-    ## [1] 4.527849
+    ## [1] 4.529281
 
 ### 5.6 KNN
 
 K-Nearest Neighbors (KNN) is the very first non-parametric model to be
 implemented. It does not need to comply with parametric assumptions as
-well as the collinearity issue. However, this methods uses the
-neighboring points to make the estimation during prediction.
+well as the collinearity issue. This method uses the neighboring points
+to make estimations during prediction.
 
 ``` r
 model_knn <- train(house.value ~., data = boston,
@@ -1729,14 +1772,14 @@ model_knn <- train(house.value ~., data = boston,
 
 Grabbing the nearest 5 neighboring points during internal estimation and
 prediction had the lowest RMSE. Therefore, it is the optimum “k” nearest
-point that this model will be used during prediction of the test
+point that this model will be using during prediction on the test
 dataset.
 
 ``` r
 plot(model_knn)
 ```
 
-![](boston_files/figure-gfm/unnamed-chunk-42-1.png)<!-- -->
+![](boston_files/figure-gfm/unnamed-chunk-43-1.png)<!-- -->
 
 ``` r
 model_knn$bestTune
@@ -1758,28 +1801,28 @@ predictions_knn <- model_knn %>% predict(test.data)
 caret::R2(predictions_knn, test.data$house.value)
 ```
 
-    ## [1] 0.8842527
+    ## [1] 0.8837879
 
 ``` r
 caret::RMSE(predictions_knn, test.data$house.value)
 ```
 
-    ## [1] 3.46711
+    ## [1] 3.47336
 
 ### 5.7 Decision Tree / CART
 
 Decision tree, also known as CART (Classification and Regression Tree)
-is my second non-parametric machine learning algorithm that work best in
-condition when there is highly non-linear relationship between the
-predictors and the responding variable. Decision tree has a upside-down
-tree-like structure with decision rules in each of the branch to guide
-the prediction of new observations.
+is my second non-parametric machine learning algorithm that work should
+very well in condition when there is highly non-linear relationship
+between the predictors and the responding variable. Decision tree has a
+upside-down tree-like structure with decision rules in each of the
+branch to guide the prediction of new observations.
 
 I am expecting a better result because decision tree tend to prefer a
 situation that a few of variables in the variables list are more
 powerful than the others. This house dataset has this characteristic.
 Few of the powerful features are nitrogen.oxide, room, and
-charles.river. This method also immune to multicollinearity.
+charles.river. This method is also immune to multicollinearity.
 
 ``` r
 set.seed(123)
@@ -1799,14 +1842,14 @@ overfitting. The best CP detected is 0.0086 with the lowest RMSE.
 plot(model_DT)
 ```
 
-![](boston_files/figure-gfm/unnamed-chunk-46-1.png)<!-- -->
+![](boston_files/figure-gfm/unnamed-chunk-47-1.png)<!-- -->
 
 ``` r
 model_DT$bestTune
 ```
 
     ##            cp
-    ## 3 0.009888246
+    ## 1 0.008601926
 
 Following decision tree can help to visualise the important decisions to
 be made during each split.
@@ -1817,25 +1860,26 @@ plot(model_DT$finalModel, uniform = T, branch = 0.5, compress = T)
 text(model_DT$finalModel, col = "darkgreen", fancy = F)
 ```
 
-![](boston_files/figure-gfm/unnamed-chunk-48-1.png)<!-- -->
+![](boston_files/figure-gfm/unnamed-chunk-49-1.png)<!-- -->
 
 Decision tree specifies the variable “room” as the root node (the node
-at the very top) after out trying all variables. It indicates that
-“room” leads to the purest two branches compared to other variables. It
-also means that the information gain for the variable “room” is the
-highest. We know more about median house prices after looking at “room”
-compared to other variables. In regression decision tree, the value of
-each split cutoff point is selected so that residual sum of squared
-error (RSS) is minimised.
+at the very top) after trying out all variables. On the root node, it
+appears that “room” leads to the purest two branches compared to other
+variables. Formally, It means that the information gain for the variable
+“room” is the highest. From the root node, we will know more about
+median house prices after looking at “room” compared to other variables.
+In regression decision tree, the value of each split cutoff point (for
+example “room &lt; 6.838”) is selected to result the purest branch, or
+defined that residual sum of squared error (RSS) is minimized.
 
 This computation is iterated at each resulting branches on sub-samples
 resulting from individual parent nodes until either maximum depth of the
-tree or when pure branches are reached - this process is known as
+tree or when pure branches are achieved. This process is known as
 recursive partitioning.
 
-Following is an alternative visual showing the exact same information
-however it shows the number of samples and associated proportion during
-each split. It is not very important but is an additional information.
+To improve the visual, following is an alternative visual showing the
+exact same information as above tree however it shows the number of
+samples and associated proportion during each split.
 
 ``` r
 library(rattle)
@@ -1865,9 +1909,9 @@ library(rattle)
 fancyRpartPlot(model_DT$finalModel, palettes = "Oranges")
 ```
 
-![](boston_files/figure-gfm/unnamed-chunk-49-1.png)<!-- -->
+![](boston_files/figure-gfm/unnamed-chunk-50-1.png)<!-- -->
 
-Following is the decision rules in the model.
+Following is the decision rules defined in the model.
 
 ``` r
 model_DT$finalModel
@@ -1880,19 +1924,23 @@ model_DT$finalModel
     ## 
     ##  1) root 407 34125.5800 22.51057  
     ##    2) room< 6.8375 334 12681.2200 19.62695  
-    ##      4) lstat>=14.4 146  3819.0980 15.30411  
-    ##        8) nitrogen.oxide>=0.657 69   884.1099 12.49855  
+    ##      4) lstat>=14.4 145  3819.0870 15.30483  
+    ##        8) nitrogen.oxide>=0.657 68   876.7047 12.45882  
     ##         16) crime.rate>=7.16463 46   350.9915 10.85870 *
-    ##         17) crime.rate< 7.16463 23   162.0191 15.77826 *
+    ##         17) crime.rate< 7.16463 22   161.6695 15.80455 *
     ##        9) nitrogen.oxide< 0.657 77  1905.1950 17.81818 *
-    ##      5) lstat< 14.4 188  4015.0520 22.98404  
-    ##       10) lstat>=5.51 167  2262.0950 22.13832 *
+    ##      5) lstat< 14.4 189  4075.3230 22.94286  
+    ##       10) lstat>=5.51 168  2309.9490 22.09702  
+    ##         20) lstat>=9.705 88   616.5777 20.71591 *
+    ##         21) lstat< 9.705 80  1340.8690 23.61625 *
     ##       11) lstat< 5.51 21   683.6381 29.70952 *
     ##    3) room>=6.8375 73  5959.9890 35.70411  
     ##      6) room< 7.443 49  2037.2070 31.28367  
     ##       12) lstat>=9.76 8   440.5750 23.02500 *
     ##       13) lstat< 9.76 41   944.5190 32.89512 *
-    ##      7) room>=7.443 24  1010.4700 44.72917 *
+    ##      7) room>=7.443 24  1010.4700 44.72917  
+    ##       14) pt.ratio>=17.6 7   465.9686 38.88571 *
+    ##       15) pt.ratio< 17.6 17   207.0588 47.13529 *
 
 ``` r
 # predictions
@@ -1904,30 +1952,30 @@ prediction_DT <- model_DT %>% predict(test.data)
 caret::R2(prediction_DT, test.data$house.value)
 ```
 
-    ## [1] 0.7695494
+    ## [1] 0.7958708
 
 ``` r
 caret::RMSE(prediction_DT, test.data$house.value)
 ```
 
-    ## [1] 4.480737
+    ## [1] 4.211489
 
-Decision tree is a powerful machine learning algorithm however, it do
+Decision tree is a powerful machine learning algorithm. However, it do
 come with its disadvantages. It is because that only one tree is built
 and therefore its result is highly relied on the training set that used
-in the split of the decision tree. Therefore there might be significant
+in the split of the decision tree. Therefore, there might be significant
 impact on the tree if there is a small change in the dataset. The lower
 result above (79.58%) might be because that the decision tree was not
-generalise well and overfited the training data.
+generalise well and overfit the training data.
 
-To solve this problem, next section I will build many trees to do a
-better prediction, it is known as random forest. I will hope to see a
-boost in prediction accuracy on the test dataset.
+To solve this problem, next section I will build and aggregate many
+trees for do a better prediction, it is known as random forest. I will
+hope to see a boost in prediction accuracy on the test dataset.
 
 ### 5.8 Random Forest
 
-Random forest is known as an ensemble learning or method because it
-aggregates hundreds of decision trees, averaging the internally built
+Random forest, is also known as an ensemble learning or method because
+it aggregates many of decision trees, averaging the internally built
 models, and creating a final high-performance predictive model compared
 to decision tree.
 
@@ -1938,11 +1986,11 @@ al. 2014, P. Bruce and Bruce 2017):
 
 -   1.  each of the tree randomly grabs a data subset from the input
         training dataset and averaging the models’ results, it is known
-        as bagging or bootstrap aggregating) and,
+        as *bagging* or *bootstrap aggregating*) and,
 
--   2.  each of the tree will have a smaller randomly given group of
+-   2.  each of the tree will be given randomly a smaller number of
         variables for them to choose when they do their split in their
-        nodes, it is known as bootstrap sampling.
+        nodes, it is known as *bootstrap sampling*.
 
 ``` r
 set.seed(123)
@@ -1964,17 +2012,17 @@ model_rf$finalModel
     ##                      Number of trees: 500
     ## No. of variables tried at each split: 7
     ## 
-    ##           Mean of squared residuals: 13.98129
-    ##                     % Var explained: 83.33
+    ##           Mean of squared residuals: 13.75115
+    ##                     % Var explained: 83.6
 
 By default, 500 trees were grown to build the random forest model with
 their results averaged. The internal accuracy is 83.29%, which is
-considered very good. You will see a much better at 89.9% later when I
-predict on the test dataset.
+considered very good. You will see a much better at 89.9% (or 90%) later
+when I predict on the test dataset.
 
 The optimum number (mtry) of predictor variables randomly selected as
-variables of choice during each split is 7, automatically discovered by
-the *caret* package.
+variables of choice during each split is 7. Ths value is automatically
+discovered by the *caret* package.
 
 ``` r
 model_rf$bestTune
@@ -1995,13 +2043,13 @@ predictions <- model_rf %>% predict(test.data)
 caret::R2(predictions, test.data$house.value)
 ```
 
-    ## [1] 0.9048515
+    ## [1] 0.9030097
 
 ``` r
 caret::RMSE(predictions, test.data$house.value)
 ```
 
-    ## [1] 2.971583
+    ## [1] 2.989836
 
 Plotting the variance importance plot of random forest and having
 following result. This “importance” plot tells you which variables are
@@ -2014,17 +2062,16 @@ associated with an increase in significance level (lower P-value).
 plot(varImp(model_rf))
 ```
 
-![](boston_files/figure-gfm/unnamed-chunk-55-1.png)<!-- -->
+![](boston_files/figure-gfm/unnamed-chunk-56-1.png)<!-- -->
 
-This graph created by the powerful random forest algorithm is useful in
+This importance plot created by the random forest algorithm is useful in
 telling us how far the important features are away from the unimportant
 ones. I can see that “lstat” which is the proportion of lower status of
 the population in the community and the number of room by “room” are the
 two most important features in predicting the median house prices.
 
-This result is the same as the results of multiple regression regression
-in previous section which also showing lstat and room are the two most
-important features based on P-value. See following summary.
+This result is the same as the results from multiple regression
+regression in previous section 5.2, check out following summary tabels.
 
 ``` r
 options(scipen = 999)
@@ -2042,14 +2089,171 @@ summary(model_mlr)$coef %>%
   rownames_to_column(var = "features") %>%
   mutate("no." = row_number()) %>% 
   relocate("no.", .before = features) %>% 
-  filter(features != "(Intercept)") %>% 
-  kbl(caption = "Results from multiple linear regression model") %>% 
+  filter(features != "(Intercept)",
+         Estimate > 0) %>% 
+  kbl(caption = "Factors that Negatively Correlated with House Prices") %>% 
   kable_paper() 
 ```
 
 <table class=" lightable-paper" style='font-family: "Arial Narrow", arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;'>
 <caption>
-Results from multiple linear regression model
+Factors that Negatively Correlated with House Prices
+</caption>
+<thead>
+<tr>
+<th style="text-align:right;">
+no.
+</th>
+<th style="text-align:left;">
+features
+</th>
+<th style="text-align:right;">
+Estimate
+</th>
+<th style="text-align:right;">
+P\_Value
+</th>
+<th style="text-align:left;">
+Significance.ordered
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:left;">
+room
+</td>
+<td style="text-align:right;">
+3.6429412
+</td>
+<td style="text-align:right;">
+0.0000000
+</td>
+<td style="text-align:left;">
+\*\*\* (&lt; 0.001)
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:left;">
+highway.index
+</td>
+<td style="text-align:right;">
+0.3256347
+</td>
+<td style="text-align:right;">
+0.0000430
+</td>
+<td style="text-align:left;">
+\*\*\* (&lt; 0.001)
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:left;">
+black
+</td>
+<td style="text-align:right;">
+0.0109290
+</td>
+<td style="text-align:right;">
+0.0002863
+</td>
+<td style="text-align:left;">
+\*\*\* (&lt; 0.001)
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+11
+</td>
+<td style="text-align:left;">
+charles.river1
+</td>
+<td style="text-align:right;">
+2.3375772
+</td>
+<td style="text-align:right;">
+0.0153213
+</td>
+<td style="text-align:left;">
+
+-   (&lt; 0.05)
+    </td>
+    </tr>
+    <tr>
+    <td style="text-align:right;">
+    12
+    </td>
+    <td style="text-align:left;">
+    resid.zone
+    </td>
+    <td style="text-align:right;">
+    0.0385582
+    </td>
+    <td style="text-align:right;">
+    0.0185896
+    </td>
+    <td style="text-align:left;">
+
+    -   (&lt; 0.05)
+        </td>
+        </tr>
+        <tr>
+        <td style="text-align:right;">
+        13
+        </td>
+        <td style="text-align:left;">
+        age
+        </td>
+        <td style="text-align:right;">
+        0.0048901
+        </td>
+        <td style="text-align:right;">
+        0.7578730
+        </td>
+        <td style="text-align:left;">
+        </td>
+        </tr>
+        </tbody>
+        </table>
+
+``` r
+options(scipen = 1)
+```
+
+``` r
+options(scipen = 999)
+
+summary(model_mlr)$coef %>% 
+  data.frame() %>% 
+  rename(P_Value = Pr...t..) %>% 
+  arrange(P_Value) %>% 
+  dplyr::select(Estimate, P_Value) %>%  
+  mutate(Significance.ordered = case_when(P_Value < 0.05 & P_Value > 0.01 ~ "* (< 0.05)",
+                                  P_Value < 0.01 & P_Value > 0.001 ~ "** (< 0.01)",
+                                  P_Value < 0.001 ~ "*** (< 0.001)",
+                                  TRUE ~ " ")) %>% 
+  arrange(P_Value) %>% 
+  rownames_to_column(var = "features") %>%
+  mutate("no." = row_number()) %>% 
+  relocate("no.", .before = features) %>% 
+  filter(features != "(Intercept)",
+         Estimate < 0) %>% 
+  kbl(caption = "Factors that Negatively Correlated with House Prices") %>% 
+  kable_paper() 
+```
+
+<table class=" lightable-paper" style='font-family: "Arial Narrow", arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;'>
+<caption>
+Factors that Negatively Correlated with House Prices
 </caption>
 <thead>
 <tr>
@@ -2079,24 +2283,7 @@ Significance.ordered
 lstat
 </td>
 <td style="text-align:right;">
--0.5201850
-</td>
-<td style="text-align:right;">
-0.0000000
-</td>
-<td style="text-align:left;">
-\*\*\* (&lt; 0.001)
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:left;">
-room
-</td>
-<td style="text-align:right;">
-3.6375809
+-0.5167881
 </td>
 <td style="text-align:right;">
 0.0000000
@@ -2113,7 +2300,7 @@ room
 pt.ratio
 </td>
 <td style="text-align:right;">
--0.9681712
+-0.9692352
 </td>
 <td style="text-align:right;">
 0.0000000
@@ -2130,27 +2317,10 @@ pt.ratio
 dist.to.work
 </td>
 <td style="text-align:right;">
--1.4083219
+-1.4098072
 </td>
 <td style="text-align:right;">
 0.0000000
-</td>
-<td style="text-align:left;">
-\*\*\* (&lt; 0.001)
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-6
-</td>
-<td style="text-align:left;">
-highway.index
-</td>
-<td style="text-align:right;">
-0.3263608
-</td>
-<td style="text-align:right;">
-0.0000408
 </td>
 <td style="text-align:left;">
 \*\*\* (&lt; 0.001)
@@ -2164,27 +2334,10 @@ highway.index
 nitrogen.oxide
 </td>
 <td style="text-align:right;">
--17.2378359
+-17.3257148
 </td>
 <td style="text-align:right;">
-0.0001164
-</td>
-<td style="text-align:left;">
-\*\*\* (&lt; 0.001)
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-8
-</td>
-<td style="text-align:left;">
-black
-</td>
-<td style="text-align:right;">
-0.0108568
-</td>
-<td style="text-align:right;">
-0.0003109
+0.0001090
 </td>
 <td style="text-align:left;">
 \*\*\* (&lt; 0.001)
@@ -2198,10 +2351,10 @@ black
 property.tax
 </td>
 <td style="text-align:right;">
--0.0122882
+-0.0123086
 </td>
 <td style="text-align:right;">
-0.0057756
+0.0057384
 </td>
 <td style="text-align:left;">
 \*\* (&lt; 0.01)
@@ -2215,10 +2368,10 @@ property.tax
 crime.rate
 </td>
 <td style="text-align:right;">
--0.0979998
+-0.0977051
 </td>
 <td style="text-align:right;">
-0.0146882
+0.0151163
 </td>
 <td style="text-align:left;">
 
@@ -2227,90 +2380,47 @@ crime.rate
     </tr>
     <tr>
     <td style="text-align:right;">
-    11
+    14
     </td>
     <td style="text-align:left;">
-    charles.river1
+    indus.biz
     </td>
     <td style="text-align:right;">
-    2.3228600
+    -0.0185927
     </td>
     <td style="text-align:right;">
-    0.0158831
+    0.7935921
     </td>
     <td style="text-align:left;">
-
-    -   (&lt; 0.05)
-        </td>
-        </tr>
-        <tr>
-        <td style="text-align:right;">
-        12
-        </td>
-        <td style="text-align:left;">
-        resid.zone
-        </td>
-        <td style="text-align:right;">
-        0.0384475
-        </td>
-        <td style="text-align:right;">
-        0.0188179
-        </td>
-        <td style="text-align:left;">
-
-        -   (&lt; 0.05)
-            </td>
-            </tr>
-            <tr>
-            <td style="text-align:right;">
-            13
-            </td>
-            <td style="text-align:left;">
-            age
-            </td>
-            <td style="text-align:right;">
-            0.0050269
-            </td>
-            <td style="text-align:right;">
-            0.7509778
-            </td>
-            <td style="text-align:left;">
-            </td>
-            </tr>
-            <tr>
-            <td style="text-align:right;">
-            14
-            </td>
-            <td style="text-align:left;">
-            indus.biz
-            </td>
-            <td style="text-align:right;">
-            -0.0181721
-            </td>
-            <td style="text-align:right;">
-            0.7979869
-            </td>
-            <td style="text-align:left;">
-            </td>
-            </tr>
-            </tbody>
-            </table>
+    </td>
+    </tr>
+    </tbody>
+    </table>
 
 ``` r
 options(scipen = 1)
 ```
 
-These results of these two algorithms are not supposed to be the same,
-for example, the relationships between features and the responding
+-   Importance plot shows that “room” is the most important variable,
+    which is supported by multiple linear regression summary with
+    indication that this relationship is negative.
+
+-   Importance plot shows that “lstat” is the second most important
+    variable, which is supported by multiple linear regression summary
+    with indication that this relationship is positive.
+
+The results of these two different algorithms usually are not the same.
+For example, the relationships between features and the responding
 variables in this project is non-linear and the result from multiple
 linear regression may not be so correct as compared to random forest
-that can digest non-linearity. Results from both algorithm can be
-similar (not entire the same) only if predictive power of features are
-really outcompete others in a significance way.
+that can digest non-linearity. Results from both algorithm could be
+similar (not entire the same) only if predictive power among features
+are really outcompete others in a significant way.
 
-“lstat” and “room” are instead supported by the results of the both
-algorithms, and therefore it is robust to say “lstat” and “room” are the
-two most important features in the prediction of median house prices.
+Variables “lstat” and “room” are instead supported by the results of the
+two different algorithms, and therefore it is robust to say “lstat” and
+“room” are the two most important features in the prediction of median
+house prices.
 
 ### 5.9 Stochastic gradient boosting (*XGBoost* in R)
 
@@ -2354,223 +2464,223 @@ model_xgb
     ## Resampling results across tuning parameters:
     ## 
     ##   eta  max_depth  colsample_bytree  subsample  nrounds  RMSE      Rsquared 
-    ##   0.3  1          0.6               0.50        50      4.170127  0.7880415
-    ##   0.3  1          0.6               0.50       100      4.156735  0.7877537
-    ##   0.3  1          0.6               0.50       150      4.194537  0.7823761
-    ##   0.3  1          0.6               0.75        50      4.129172  0.7913074
-    ##   0.3  1          0.6               0.75       100      4.101941  0.7933085
-    ##   0.3  1          0.6               0.75       150      4.124886  0.7901704
-    ##   0.3  1          0.6               1.00        50      4.146326  0.7880626
-    ##   0.3  1          0.6               1.00       100      4.116484  0.7912526
-    ##   0.3  1          0.6               1.00       150      4.121387  0.7911620
-    ##   0.3  1          0.8               0.50        50      4.162988  0.7897570
-    ##   0.3  1          0.8               0.50       100      4.066287  0.7967120
-    ##   0.3  1          0.8               0.50       150      4.059245  0.7974288
-    ##   0.3  1          0.8               0.75        50      4.131955  0.7889055
-    ##   0.3  1          0.8               0.75       100      4.166980  0.7850253
-    ##   0.3  1          0.8               0.75       150      4.163668  0.7847501
-    ##   0.3  1          0.8               1.00        50      4.124546  0.7896861
-    ##   0.3  1          0.8               1.00       100      4.129239  0.7891436
-    ##   0.3  1          0.8               1.00       150      4.138655  0.7889339
-    ##   0.3  2          0.6               0.50        50      3.778688  0.8192513
-    ##   0.3  2          0.6               0.50       100      3.706525  0.8250361
-    ##   0.3  2          0.6               0.50       150      3.693553  0.8262908
-    ##   0.3  2          0.6               0.75        50      3.739527  0.8221340
-    ##   0.3  2          0.6               0.75       100      3.639100  0.8288124
-    ##   0.3  2          0.6               0.75       150      3.588384  0.8334708
-    ##   0.3  2          0.6               1.00        50      3.767644  0.8208265
-    ##   0.3  2          0.6               1.00       100      3.626253  0.8317619
-    ##   0.3  2          0.6               1.00       150      3.591546  0.8340700
-    ##   0.3  2          0.8               0.50        50      3.780266  0.8199309
-    ##   0.3  2          0.8               0.50       100      3.694306  0.8268509
-    ##   0.3  2          0.8               0.50       150      3.681793  0.8276826
-    ##   0.3  2          0.8               0.75        50      3.670932  0.8336022
-    ##   0.3  2          0.8               0.75       100      3.548491  0.8440035
-    ##   0.3  2          0.8               0.75       150      3.510885  0.8462873
-    ##   0.3  2          0.8               1.00        50      3.730983  0.8242696
-    ##   0.3  2          0.8               1.00       100      3.623164  0.8324777
-    ##   0.3  2          0.8               1.00       150      3.574516  0.8356910
-    ##   0.3  3          0.6               0.50        50      3.646501  0.8393174
-    ##   0.3  3          0.6               0.50       100      3.601934  0.8414516
-    ##   0.3  3          0.6               0.50       150      3.585673  0.8419101
-    ##   0.3  3          0.6               0.75        50      3.662010  0.8319633
-    ##   0.3  3          0.6               0.75       100      3.641285  0.8335207
-    ##   0.3  3          0.6               0.75       150      3.631674  0.8344736
-    ##   0.3  3          0.6               1.00        50      3.585486  0.8387948
-    ##   0.3  3          0.6               1.00       100      3.562995  0.8397179
-    ##   0.3  3          0.6               1.00       150      3.564702  0.8394970
-    ##   0.3  3          0.8               0.50        50      3.671453  0.8345947
-    ##   0.3  3          0.8               0.50       100      3.620037  0.8389663
-    ##   0.3  3          0.8               0.50       150      3.607109  0.8398537
-    ##   0.3  3          0.8               0.75        50      3.564062  0.8394572
-    ##   0.3  3          0.8               0.75       100      3.526104  0.8422196
-    ##   0.3  3          0.8               0.75       150      3.512017  0.8429078
-    ##   0.3  3          0.8               1.00        50      3.447148  0.8499000
-    ##   0.3  3          0.8               1.00       100      3.414513  0.8521646
-    ##   0.3  3          0.8               1.00       150      3.422147  0.8511965
-    ##   0.4  1          0.6               0.50        50      4.207256  0.7860996
-    ##   0.4  1          0.6               0.50       100      4.200983  0.7870065
-    ##   0.4  1          0.6               0.50       150      4.154610  0.7894350
-    ##   0.4  1          0.6               0.75        50      4.235284  0.7840750
-    ##   0.4  1          0.6               0.75       100      4.228301  0.7809011
-    ##   0.4  1          0.6               0.75       150      4.226576  0.7790604
-    ##   0.4  1          0.6               1.00        50      4.187758  0.7832833
-    ##   0.4  1          0.6               1.00       100      4.118796  0.7897003
-    ##   0.4  1          0.6               1.00       150      4.137578  0.7878719
-    ##   0.4  1          0.8               0.50        50      4.174527  0.7885634
-    ##   0.4  1          0.8               0.50       100      4.126798  0.7908629
-    ##   0.4  1          0.8               0.50       150      4.139839  0.7906797
-    ##   0.4  1          0.8               0.75        50      4.183500  0.7838141
-    ##   0.4  1          0.8               0.75       100      4.168206  0.7854514
-    ##   0.4  1          0.8               0.75       150      4.160548  0.7857119
-    ##   0.4  1          0.8               1.00        50      4.125517  0.7880182
-    ##   0.4  1          0.8               1.00       100      4.115813  0.7899519
-    ##   0.4  1          0.8               1.00       150      4.106285  0.7910705
-    ##   0.4  2          0.6               0.50        50      3.884069  0.8136387
-    ##   0.4  2          0.6               0.50       100      3.785799  0.8214896
-    ##   0.4  2          0.6               0.50       150      3.746066  0.8242734
-    ##   0.4  2          0.6               0.75        50      3.707520  0.8287179
-    ##   0.4  2          0.6               0.75       100      3.623509  0.8341836
-    ##   0.4  2          0.6               0.75       150      3.612747  0.8342351
-    ##   0.4  2          0.6               1.00        50      3.758410  0.8195650
-    ##   0.4  2          0.6               1.00       100      3.674846  0.8255727
-    ##   0.4  2          0.6               1.00       150      3.655098  0.8269006
-    ##   0.4  2          0.8               0.50        50      3.758128  0.8267059
-    ##   0.4  2          0.8               0.50       100      3.680621  0.8313350
-    ##   0.4  2          0.8               0.50       150      3.669382  0.8330322
-    ##   0.4  2          0.8               0.75        50      3.657160  0.8322083
-    ##   0.4  2          0.8               0.75       100      3.607329  0.8358325
-    ##   0.4  2          0.8               0.75       150      3.592890  0.8373473
-    ##   0.4  2          0.8               1.00        50      3.749623  0.8245279
-    ##   0.4  2          0.8               1.00       100      3.647790  0.8318508
-    ##   0.4  2          0.8               1.00       150      3.611597  0.8345148
-    ##   0.4  3          0.6               0.50        50      3.859032  0.8176383
-    ##   0.4  3          0.6               0.50       100      3.810304  0.8213052
-    ##   0.4  3          0.6               0.50       150      3.814574  0.8204120
-    ##   0.4  3          0.6               0.75        50      3.664294  0.8335520
-    ##   0.4  3          0.6               0.75       100      3.651317  0.8352648
-    ##   0.4  3          0.6               0.75       150      3.666925  0.8339555
-    ##   0.4  3          0.6               1.00        50      3.583223  0.8390848
-    ##   0.4  3          0.6               1.00       100      3.580588  0.8392029
-    ##   0.4  3          0.6               1.00       150      3.586876  0.8388715
-    ##   0.4  3          0.8               0.50        50      3.829594  0.8181832
-    ##   0.4  3          0.8               0.50       100      3.824949  0.8177066
-    ##   0.4  3          0.8               0.50       150      3.846340  0.8161486
-    ##   0.4  3          0.8               0.75        50      3.613957  0.8335311
-    ##   0.4  3          0.8               0.75       100      3.601199  0.8333591
-    ##   0.4  3          0.8               0.75       150      3.600359  0.8331938
-    ##   0.4  3          0.8               1.00        50      3.487390  0.8499930
-    ##   0.4  3          0.8               1.00       100      3.478254  0.8504478
-    ##   0.4  3          0.8               1.00       150      3.491537  0.8494131
+    ##   0.3  1          0.6               0.50        50      4.189776  0.7851546
+    ##   0.3  1          0.6               0.50       100      4.162309  0.7864778
+    ##   0.3  1          0.6               0.50       150      4.229587  0.7780758
+    ##   0.3  1          0.6               0.75        50      4.111238  0.7931788
+    ##   0.3  1          0.6               0.75       100      4.092681  0.7941121
+    ##   0.3  1          0.6               0.75       150      4.127679  0.7902403
+    ##   0.3  1          0.6               1.00        50      4.156256  0.7879687
+    ##   0.3  1          0.6               1.00       100      4.142841  0.7896297
+    ##   0.3  1          0.6               1.00       150      4.143610  0.7896701
+    ##   0.3  1          0.8               0.50        50      4.165157  0.7894113
+    ##   0.3  1          0.8               0.50       100      4.087592  0.7948541
+    ##   0.3  1          0.8               0.50       150      4.092606  0.7930074
+    ##   0.3  1          0.8               0.75        50      4.123355  0.7906785
+    ##   0.3  1          0.8               0.75       100      4.179660  0.7847117
+    ##   0.3  1          0.8               0.75       150      4.199453  0.7832948
+    ##   0.3  1          0.8               1.00        50      4.139836  0.7876808
+    ##   0.3  1          0.8               1.00       100      4.131703  0.7885040
+    ##   0.3  1          0.8               1.00       150      4.126364  0.7897973
+    ##   0.3  2          0.6               0.50        50      3.803650  0.8195566
+    ##   0.3  2          0.6               0.50       100      3.717671  0.8268153
+    ##   0.3  2          0.6               0.50       150      3.697106  0.8283528
+    ##   0.3  2          0.6               0.75        50      3.740200  0.8213224
+    ##   0.3  2          0.6               0.75       100      3.591036  0.8339255
+    ##   0.3  2          0.6               0.75       150      3.567242  0.8358048
+    ##   0.3  2          0.6               1.00        50      3.755523  0.8224428
+    ##   0.3  2          0.6               1.00       100      3.658675  0.8295833
+    ##   0.3  2          0.6               1.00       150      3.606413  0.8338017
+    ##   0.3  2          0.8               0.50        50      3.722845  0.8257211
+    ##   0.3  2          0.8               0.50       100      3.574956  0.8395282
+    ##   0.3  2          0.8               0.50       150      3.583798  0.8384354
+    ##   0.3  2          0.8               0.75        50      3.645197  0.8364350
+    ##   0.3  2          0.8               0.75       100      3.510652  0.8464859
+    ##   0.3  2          0.8               0.75       150      3.496145  0.8473652
+    ##   0.3  2          0.8               1.00        50      3.726654  0.8233437
+    ##   0.3  2          0.8               1.00       100      3.639853  0.8306968
+    ##   0.3  2          0.8               1.00       150      3.610958  0.8322943
+    ##   0.3  3          0.6               0.50        50      3.669020  0.8321834
+    ##   0.3  3          0.6               0.50       100      3.591623  0.8395536
+    ##   0.3  3          0.6               0.50       150      3.575955  0.8405104
+    ##   0.3  3          0.6               0.75        50      3.552543  0.8410422
+    ##   0.3  3          0.6               0.75       100      3.526917  0.8424199
+    ##   0.3  3          0.6               0.75       150      3.514443  0.8428980
+    ##   0.3  3          0.6               1.00        50      3.574724  0.8391502
+    ##   0.3  3          0.6               1.00       100      3.553550  0.8406611
+    ##   0.3  3          0.6               1.00       150      3.556043  0.8403640
+    ##   0.3  3          0.8               0.50        50      3.828091  0.8192159
+    ##   0.3  3          0.8               0.50       100      3.790146  0.8225129
+    ##   0.3  3          0.8               0.50       150      3.785898  0.8226046
+    ##   0.3  3          0.8               0.75        50      3.548494  0.8390757
+    ##   0.3  3          0.8               0.75       100      3.531651  0.8398979
+    ##   0.3  3          0.8               0.75       150      3.532519  0.8397190
+    ##   0.3  3          0.8               1.00        50      3.486991  0.8467347
+    ##   0.3  3          0.8               1.00       100      3.480540  0.8466606
+    ##   0.3  3          0.8               1.00       150      3.485283  0.8463671
+    ##   0.4  1          0.6               0.50        50      4.198218  0.7860719
+    ##   0.4  1          0.6               0.50       100      4.204524  0.7845740
+    ##   0.4  1          0.6               0.50       150      4.171578  0.7877872
+    ##   0.4  1          0.6               0.75        50      4.231983  0.7842167
+    ##   0.4  1          0.6               0.75       100      4.216740  0.7814804
+    ##   0.4  1          0.6               0.75       150      4.232249  0.7786622
+    ##   0.4  1          0.6               1.00        50      4.172368  0.7841458
+    ##   0.4  1          0.6               1.00       100      4.109850  0.7903851
+    ##   0.4  1          0.6               1.00       150      4.115078  0.7897200
+    ##   0.4  1          0.8               0.50        50      4.213517  0.7825986
+    ##   0.4  1          0.8               0.50       100      4.170898  0.7873579
+    ##   0.4  1          0.8               0.50       150      4.172120  0.7887917
+    ##   0.4  1          0.8               0.75        50      4.121930  0.7922201
+    ##   0.4  1          0.8               0.75       100      4.101577  0.7922773
+    ##   0.4  1          0.8               0.75       150      4.101497  0.7915438
+    ##   0.4  1          0.8               1.00        50      4.138594  0.7869596
+    ##   0.4  1          0.8               1.00       100      4.131643  0.7887864
+    ##   0.4  1          0.8               1.00       150      4.140788  0.7883835
+    ##   0.4  2          0.6               0.50        50      3.885451  0.8112289
+    ##   0.4  2          0.6               0.50       100      3.786123  0.8192151
+    ##   0.4  2          0.6               0.50       150      3.739250  0.8229238
+    ##   0.4  2          0.6               0.75        50      3.717788  0.8292076
+    ##   0.4  2          0.6               0.75       100      3.616377  0.8363599
+    ##   0.4  2          0.6               0.75       150      3.606505  0.8363261
+    ##   0.4  2          0.6               1.00        50      3.802233  0.8151031
+    ##   0.4  2          0.6               1.00       100      3.686314  0.8243742
+    ##   0.4  2          0.6               1.00       150      3.663689  0.8259475
+    ##   0.4  2          0.8               0.50        50      3.805126  0.8206570
+    ##   0.4  2          0.8               0.50       100      3.736692  0.8250245
+    ##   0.4  2          0.8               0.50       150      3.708495  0.8285183
+    ##   0.4  2          0.8               0.75        50      3.691337  0.8299594
+    ##   0.4  2          0.8               0.75       100      3.587630  0.8388444
+    ##   0.4  2          0.8               0.75       150      3.558365  0.8411193
+    ##   0.4  2          0.8               1.00        50      3.765799  0.8224197
+    ##   0.4  2          0.8               1.00       100      3.618046  0.8336428
+    ##   0.4  2          0.8               1.00       150      3.611047  0.8336760
+    ##   0.4  3          0.6               0.50        50      3.812909  0.8267497
+    ##   0.4  3          0.6               0.50       100      3.763888  0.8293300
+    ##   0.4  3          0.6               0.50       150      3.775272  0.8287954
+    ##   0.4  3          0.6               0.75        50      3.645958  0.8341149
+    ##   0.4  3          0.6               0.75       100      3.622206  0.8368058
+    ##   0.4  3          0.6               0.75       150      3.638841  0.8352735
+    ##   0.4  3          0.6               1.00        50      3.637914  0.8321681
+    ##   0.4  3          0.6               1.00       100      3.609429  0.8341381
+    ##   0.4  3          0.6               1.00       150      3.613616  0.8337972
+    ##   0.4  3          0.8               0.50        50      3.770588  0.8231466
+    ##   0.4  3          0.8               0.50       100      3.770893  0.8223023
+    ##   0.4  3          0.8               0.50       150      3.805073  0.8207812
+    ##   0.4  3          0.8               0.75        50      3.612268  0.8347216
+    ##   0.4  3          0.8               0.75       100      3.618751  0.8335765
+    ##   0.4  3          0.8               0.75       150      3.603129  0.8343715
+    ##   0.4  3          0.8               1.00        50      3.519945  0.8426974
+    ##   0.4  3          0.8               1.00       100      3.531738  0.8418573
+    ##   0.4  3          0.8               1.00       150      3.541093  0.8410112
     ##   MAE     
-    ##   2.917175
-    ##   2.827874
-    ##   2.838551
-    ##   2.843709
-    ##   2.771587
-    ##   2.734030
-    ##   2.876623
-    ##   2.806810
-    ##   2.770750
-    ##   2.939895
-    ##   2.825916
-    ##   2.802249
-    ##   2.847071
-    ##   2.816003
-    ##   2.786891
-    ##   2.869895
-    ##   2.811022
-    ##   2.785170
-    ##   2.612048
-    ##   2.572455
-    ##   2.552568
-    ##   2.573992
-    ##   2.464102
-    ##   2.421229
-    ##   2.564126
-    ##   2.439978
-    ##   2.404285
-    ##   2.599337
-    ##   2.527795
-    ##   2.532627
-    ##   2.508029
-    ##   2.407212
-    ##   2.383296
-    ##   2.522319
-    ##   2.428845
-    ##   2.384928
-    ##   2.542014
-    ##   2.531392
-    ##   2.514837
-    ##   2.463474
-    ##   2.439640
-    ##   2.429970
-    ##   2.397460
-    ##   2.375582
-    ##   2.381504
-    ##   2.549058
-    ##   2.508027
-    ##   2.509961
-    ##   2.423793
-    ##   2.403578
-    ##   2.408533
-    ##   2.357442
-    ##   2.331469
-    ##   2.337121
-    ##   2.966730
-    ##   2.917582
-    ##   2.858821
-    ##   2.927778
-    ##   2.837464
-    ##   2.794936
-    ##   2.882630
-    ##   2.796708
-    ##   2.770937
-    ##   2.967636
-    ##   2.856397
-    ##   2.848462
-    ##   2.932325
-    ##   2.837006
-    ##   2.796402
-    ##   2.867539
-    ##   2.815769
-    ##   2.783343
-    ##   2.693192
-    ##   2.612358
-    ##   2.561231
-    ##   2.599917
-    ##   2.529357
-    ##   2.519763
-    ##   2.540475
-    ##   2.474065
-    ##   2.448913
-    ##   2.608559
-    ##   2.534152
-    ##   2.518925
-    ##   2.521120
-    ##   2.469242
-    ##   2.453184
-    ##   2.485660
-    ##   2.416202
-    ##   2.390595
-    ##   2.660302
-    ##   2.616814
-    ##   2.648271
-    ##   2.524843
-    ##   2.521238
-    ##   2.523219
-    ##   2.426118
-    ##   2.438480
-    ##   2.445657
-    ##   2.614335
-    ##   2.624205
-    ##   2.637003
-    ##   2.450865
-    ##   2.453151
-    ##   2.453275
-    ##   2.380612
-    ##   2.377536
-    ##   2.388028
+    ##   2.901790
+    ##   2.838405
+    ##   2.848366
+    ##   2.812997
+    ##   2.756037
+    ##   2.736720
+    ##   2.860127
+    ##   2.797161
+    ##   2.760498
+    ##   2.899602
+    ##   2.803154
+    ##   2.782348
+    ##   2.845007
+    ##   2.823206
+    ##   2.806186
+    ##   2.847221
+    ##   2.787556
+    ##   2.762561
+    ##   2.622077
+    ##   2.578403
+    ##   2.533551
+    ##   2.550101
+    ##   2.434470
+    ##   2.405851
+    ##   2.577328
+    ##   2.464856
+    ##   2.428544
+    ##   2.550656
+    ##   2.462248
+    ##   2.477318
+    ##   2.502441
+    ##   2.393240
+    ##   2.388367
+    ##   2.524414
+    ##   2.449682
+    ##   2.424107
+    ##   2.561106
+    ##   2.510775
+    ##   2.499400
+    ##   2.427628
+    ##   2.400694
+    ##   2.396384
+    ##   2.387770
+    ##   2.373291
+    ##   2.385525
+    ##   2.630002
+    ##   2.594515
+    ##   2.589268
+    ##   2.431589
+    ##   2.417795
+    ##   2.422249
+    ##   2.383951
+    ##   2.372599
+    ##   2.373566
+    ##   2.967161
+    ##   2.916485
+    ##   2.878347
+    ##   2.923094
+    ##   2.829805
+    ##   2.798984
+    ##   2.865730
+    ##   2.772787
+    ##   2.747468
+    ##   2.978658
+    ##   2.897110
+    ##   2.856368
+    ##   2.892791
+    ##   2.807242
+    ##   2.768749
+    ##   2.873764
+    ##   2.820475
+    ##   2.801911
+    ##   2.673810
+    ##   2.605481
+    ##   2.574590
+    ##   2.577104
+    ##   2.512968
+    ##   2.506743
+    ##   2.592469
+    ##   2.516785
+    ##   2.493486
+    ##   2.622820
+    ##   2.574954
+    ##   2.556060
+    ##   2.528548
+    ##   2.442653
+    ##   2.432378
+    ##   2.521558
+    ##   2.408921
+    ##   2.400617
+    ##   2.667463
+    ##   2.638041
+    ##   2.648155
+    ##   2.502516
+    ##   2.480522
+    ##   2.486876
+    ##   2.488359
+    ##   2.471257
+    ##   2.482270
+    ##   2.596783
+    ##   2.609937
+    ##   2.639025
+    ##   2.480500
+    ##   2.493350
+    ##   2.483111
+    ##   2.400095
+    ##   2.402896
+    ##   2.414607
     ## 
     ## Tuning parameter 'gamma' was held constant at a value of 0
     ## Tuning
@@ -2603,17 +2713,17 @@ predictions <- model_xgb %>% predict(test.data)
 caret::R2(predictions, test.data$house.value)
 ```
 
-    ## [1] 0.8987755
+    ## [1] 0.8971142
 
 ``` r
 caret::RMSE(predictions, test.data$house.value)
 ```
 
-    ## [1] 2.998717
+    ## [1] 3.005415
 
-This model has result that is not too far away from random forest. Next
-section will create a graph to compare the performance metrics of all
-machine learning models.
+This model has results that are not too far away from random forest.
+Next section will create a graph to compare the performance metrics of
+all machine learning models I have trained.
 
 ### 6.0 Final Model Comparison
 
@@ -2668,191 +2778,72 @@ ggplot(models, aes(x = fct_reorder(Model, -results), y = results, fill = metrics
   geom_text(aes(label = paste0(results, "%"), vjust = 1.5))
 ```
 
-![](boston_files/figure-gfm/unnamed-chunk-61-1.png)<!-- -->
+![](boston_files/figure-gfm/unnamed-chunk-63-1.png)<!-- -->
 
 From this result, I conclude that random forest algorithm has the
-highest prediction performance on the test dataset in this project. It
-has the highest good R-squared value (R2, %) at 89.97%, or 90%.
+highest prediction performance on the randomly sampled test dataset in
+this project. It has the highest good R-squared value (R2, %) at 89.97%,
+or 90%.
 
-This R-squared value means that the predicted outcome values by the
-Random Forest using the test dataset has a high correlation with the
-observed values in the test dataset. Alternatively, \~90% similar.
-Random forest has also the lowest prediction error rate at 13.43% (RMSE
-divided by the mean of the y variables in test dataset).
+The 89.97% R-squared value means that the predicted outcome values by
+the Random Forest using the test dataset has a high correlation with the
+observed values in the test dataset. Alternatively, results are
+approximately 90% similar. Random forest has also the lowest prediction
+error rate at 13.43% (RMSE divided by the mean of the y variables in
+test dataset).
 
 ## 6 Model for Production
 
-Saving the random forest model for model production with RShiny.
+This section uses RShiny to produce an online interactive application to
+make predictions using the random forest algorithm.
 
-``` r
-saveRDS(model_rf, "boston_rf_model.rds")
-```
+Demo picture:
 
-Saving the random forest model for model production with RShiny.
+![](https://raw.githubusercontent.com/KAR-NG/Predicting-House-Prices-in-Boston_UniqueVersion/main/pic4_shiny.JPG)
 
-``` r
-write_csv(train.data, "train.csv")
-```
+**Visit this link to use the app:**
 
-``` r
-iris[, -1]
-```
+<https://karhou.shinyapps.io/boston/>
 
-    ##     Sepal.Width Petal.Length Petal.Width    Species
-    ## 1           3.5          1.4         0.2     setosa
-    ## 2           3.0          1.4         0.2     setosa
-    ## 3           3.2          1.3         0.2     setosa
-    ## 4           3.1          1.5         0.2     setosa
-    ## 5           3.6          1.4         0.2     setosa
-    ## 6           3.9          1.7         0.4     setosa
-    ## 7           3.4          1.4         0.3     setosa
-    ## 8           3.4          1.5         0.2     setosa
-    ## 9           2.9          1.4         0.2     setosa
-    ## 10          3.1          1.5         0.1     setosa
-    ## 11          3.7          1.5         0.2     setosa
-    ## 12          3.4          1.6         0.2     setosa
-    ## 13          3.0          1.4         0.1     setosa
-    ## 14          3.0          1.1         0.1     setosa
-    ## 15          4.0          1.2         0.2     setosa
-    ## 16          4.4          1.5         0.4     setosa
-    ## 17          3.9          1.3         0.4     setosa
-    ## 18          3.5          1.4         0.3     setosa
-    ## 19          3.8          1.7         0.3     setosa
-    ## 20          3.8          1.5         0.3     setosa
-    ## 21          3.4          1.7         0.2     setosa
-    ## 22          3.7          1.5         0.4     setosa
-    ## 23          3.6          1.0         0.2     setosa
-    ## 24          3.3          1.7         0.5     setosa
-    ## 25          3.4          1.9         0.2     setosa
-    ## 26          3.0          1.6         0.2     setosa
-    ## 27          3.4          1.6         0.4     setosa
-    ## 28          3.5          1.5         0.2     setosa
-    ## 29          3.4          1.4         0.2     setosa
-    ## 30          3.2          1.6         0.2     setosa
-    ## 31          3.1          1.6         0.2     setosa
-    ## 32          3.4          1.5         0.4     setosa
-    ## 33          4.1          1.5         0.1     setosa
-    ## 34          4.2          1.4         0.2     setosa
-    ## 35          3.1          1.5         0.2     setosa
-    ## 36          3.2          1.2         0.2     setosa
-    ## 37          3.5          1.3         0.2     setosa
-    ## 38          3.6          1.4         0.1     setosa
-    ## 39          3.0          1.3         0.2     setosa
-    ## 40          3.4          1.5         0.2     setosa
-    ## 41          3.5          1.3         0.3     setosa
-    ## 42          2.3          1.3         0.3     setosa
-    ## 43          3.2          1.3         0.2     setosa
-    ## 44          3.5          1.6         0.6     setosa
-    ## 45          3.8          1.9         0.4     setosa
-    ## 46          3.0          1.4         0.3     setosa
-    ## 47          3.8          1.6         0.2     setosa
-    ## 48          3.2          1.4         0.2     setosa
-    ## 49          3.7          1.5         0.2     setosa
-    ## 50          3.3          1.4         0.2     setosa
-    ## 51          3.2          4.7         1.4 versicolor
-    ## 52          3.2          4.5         1.5 versicolor
-    ## 53          3.1          4.9         1.5 versicolor
-    ## 54          2.3          4.0         1.3 versicolor
-    ## 55          2.8          4.6         1.5 versicolor
-    ## 56          2.8          4.5         1.3 versicolor
-    ## 57          3.3          4.7         1.6 versicolor
-    ## 58          2.4          3.3         1.0 versicolor
-    ## 59          2.9          4.6         1.3 versicolor
-    ## 60          2.7          3.9         1.4 versicolor
-    ## 61          2.0          3.5         1.0 versicolor
-    ## 62          3.0          4.2         1.5 versicolor
-    ## 63          2.2          4.0         1.0 versicolor
-    ## 64          2.9          4.7         1.4 versicolor
-    ## 65          2.9          3.6         1.3 versicolor
-    ## 66          3.1          4.4         1.4 versicolor
-    ## 67          3.0          4.5         1.5 versicolor
-    ## 68          2.7          4.1         1.0 versicolor
-    ## 69          2.2          4.5         1.5 versicolor
-    ## 70          2.5          3.9         1.1 versicolor
-    ## 71          3.2          4.8         1.8 versicolor
-    ## 72          2.8          4.0         1.3 versicolor
-    ## 73          2.5          4.9         1.5 versicolor
-    ## 74          2.8          4.7         1.2 versicolor
-    ## 75          2.9          4.3         1.3 versicolor
-    ## 76          3.0          4.4         1.4 versicolor
-    ## 77          2.8          4.8         1.4 versicolor
-    ## 78          3.0          5.0         1.7 versicolor
-    ## 79          2.9          4.5         1.5 versicolor
-    ## 80          2.6          3.5         1.0 versicolor
-    ## 81          2.4          3.8         1.1 versicolor
-    ## 82          2.4          3.7         1.0 versicolor
-    ## 83          2.7          3.9         1.2 versicolor
-    ## 84          2.7          5.1         1.6 versicolor
-    ## 85          3.0          4.5         1.5 versicolor
-    ## 86          3.4          4.5         1.6 versicolor
-    ## 87          3.1          4.7         1.5 versicolor
-    ## 88          2.3          4.4         1.3 versicolor
-    ## 89          3.0          4.1         1.3 versicolor
-    ## 90          2.5          4.0         1.3 versicolor
-    ## 91          2.6          4.4         1.2 versicolor
-    ## 92          3.0          4.6         1.4 versicolor
-    ## 93          2.6          4.0         1.2 versicolor
-    ## 94          2.3          3.3         1.0 versicolor
-    ## 95          2.7          4.2         1.3 versicolor
-    ## 96          3.0          4.2         1.2 versicolor
-    ## 97          2.9          4.2         1.3 versicolor
-    ## 98          2.9          4.3         1.3 versicolor
-    ## 99          2.5          3.0         1.1 versicolor
-    ## 100         2.8          4.1         1.3 versicolor
-    ## 101         3.3          6.0         2.5  virginica
-    ## 102         2.7          5.1         1.9  virginica
-    ## 103         3.0          5.9         2.1  virginica
-    ## 104         2.9          5.6         1.8  virginica
-    ## 105         3.0          5.8         2.2  virginica
-    ## 106         3.0          6.6         2.1  virginica
-    ## 107         2.5          4.5         1.7  virginica
-    ## 108         2.9          6.3         1.8  virginica
-    ## 109         2.5          5.8         1.8  virginica
-    ## 110         3.6          6.1         2.5  virginica
-    ## 111         3.2          5.1         2.0  virginica
-    ## 112         2.7          5.3         1.9  virginica
-    ## 113         3.0          5.5         2.1  virginica
-    ## 114         2.5          5.0         2.0  virginica
-    ## 115         2.8          5.1         2.4  virginica
-    ## 116         3.2          5.3         2.3  virginica
-    ## 117         3.0          5.5         1.8  virginica
-    ## 118         3.8          6.7         2.2  virginica
-    ## 119         2.6          6.9         2.3  virginica
-    ## 120         2.2          5.0         1.5  virginica
-    ## 121         3.2          5.7         2.3  virginica
-    ## 122         2.8          4.9         2.0  virginica
-    ## 123         2.8          6.7         2.0  virginica
-    ## 124         2.7          4.9         1.8  virginica
-    ## 125         3.3          5.7         2.1  virginica
-    ## 126         3.2          6.0         1.8  virginica
-    ## 127         2.8          4.8         1.8  virginica
-    ## 128         3.0          4.9         1.8  virginica
-    ## 129         2.8          5.6         2.1  virginica
-    ## 130         3.0          5.8         1.6  virginica
-    ## 131         2.8          6.1         1.9  virginica
-    ## 132         3.8          6.4         2.0  virginica
-    ## 133         2.8          5.6         2.2  virginica
-    ## 134         2.8          5.1         1.5  virginica
-    ## 135         2.6          5.6         1.4  virginica
-    ## 136         3.0          6.1         2.3  virginica
-    ## 137         3.4          5.6         2.4  virginica
-    ## 138         3.1          5.5         1.8  virginica
-    ## 139         3.0          4.8         1.8  virginica
-    ## 140         3.1          5.4         2.1  virginica
-    ## 141         3.1          5.6         2.4  virginica
-    ## 142         3.1          5.1         2.3  virginica
-    ## 143         2.7          5.1         1.9  virginica
-    ## 144         3.2          5.9         2.3  virginica
-    ## 145         3.3          5.7         2.5  virginica
-    ## 146         3.0          5.2         2.3  virginica
-    ## 147         2.5          5.0         1.9  virginica
-    ## 148         3.0          5.2         2.0  virginica
-    ## 149         3.4          5.4         2.3  virginica
-    ## 150         3.0          5.1         1.8  virginica
+**Visit this github link to view the codes I used to program this app.**
 
-(In Progress)
+<https://github.com/KAR-NG/Predicting-House-Prices-in-Boston_UniqueVersion/blob/main/app.R>
 
 ## 7 Conclusion
+
+In conclusion, 7 different models were built to study this dataset,
+included multiple linear regression (MLR), Lasso regression, Partial
+Least Squares (PLS), K-Nearest Neighbor (KNN), Decision tree, random
+forest, and stochastic gradient boosted random forest (XGBoost).
+
+-   Random forest model had the best predictive power at 90% compared to
+    all other models and should be used for prediction. A RShiny app has
+    been built to make this model into production.
+
+-   The variable “*age*” that stands for “Proportion of owner-occupied
+    units built prior to 1940” and the variable “*indus*” that stands
+    for “Proportion of non-retail business acres per town” are **not
+    related** in the house prices with P higher than 0.05.
+
+-   The **3 most positively related** variables are the *number of
+    rooms* that affects house prices the most with the most significance
+    level (lowest P-value with a value of &lt; 0.001), followed by the
+    *proportion of black community* (P-value &lt;0.001) and the *index
+    of accessibility to radial highway* (P-value &lt;0.001).
+
+-   The **3 most negatively related** variables are the *lower status of
+    the population* (percent) (P-value &lt;0.001), followed by the
+    second ranked *nitrogen oxide concentration* (P-value &lt;0.001),
+    and the third negative variable is *crime rate* (P-value &lt; 0.05).
+    The higher the values of these variables, house prices are
+    negatively impacted the most.
+
+-   In overall, the most important 2 variables related to the Boston
+    median house prices in the late 70s are the number of room (positive
+    related) and the proportion of lower status population in the
+    community (negative related).
+
+*Thank you for reading*
 
 ## 8 LEGALITY
 
