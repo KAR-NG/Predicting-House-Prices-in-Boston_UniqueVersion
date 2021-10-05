@@ -231,7 +231,18 @@ colSums(is.na(boston))
 
 Since the purpose of this project is to assess the effects of each of these variables in predicting the median house prices. I will keep all variables at this point. I will make variable selection again in later analysis. 
 
-Now, the dataset is ready for next stage.
+Let's have a final glimpse of the data again.
+
+```{r}
+# Convert 2 integers variable "highway.index" and "property.tax " to double type. 
+
+boston <- boston %>% 
+  mutate_if(is.integer, as.double)
+
+glimpse(boston)
+
+```
+
 
 
 
@@ -255,7 +266,7 @@ This part is important in studying at the distribution of the data of each varia
 
 ggplot(bos, aes(x = value, fill = key)) +
   geom_histogram(colour = "white", bins = 20) +
-  facet_wrap(~ key, scale = "free") +
+  facet_wrap(~ key, scale = "free") + 
   theme(legend.position = "none")
 
 ```

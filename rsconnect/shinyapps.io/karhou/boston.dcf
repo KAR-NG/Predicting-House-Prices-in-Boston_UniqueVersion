@@ -1,0 +1,13 @@
+name: boston
+title: boston
+username:
+account: karhou
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4797618
+bundleId: 5104794
+url: https://karhou.shinyapps.io/boston/
+when: 1633404528.73203
+lastSyncTime: 1633404528.73203
+asMultiple: FALSE
+asStatic: FALSE
