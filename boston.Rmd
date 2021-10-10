@@ -45,9 +45,9 @@ options(scipen = 0)
 
 ## 2 INTRODUCTION
 
-This project uses a public dataset named "Boston" from the R package - "MASS". It is a famous dataset for machine learning. However, I have made adjustment to this dataset to make overall analysis interesting and unique. First, I changed the names of most of the columns into names that are more representative; Second, I induced some missing values in 2 of the 14 columns, "black" and "lstat", and I will use R to impute the missing values with algorithm.
+This project uses a public dataset named "Boston" from a R package - "MASS". It is a famous dataset for machine learning practitioners. However, I have made some adjustments to this dataset to make overall analysis more interesting and unique. 
 
-This Boston housing dataset studies the effects of a range of variables on median house prices in Boston in **late 70s**, United States. 
+This Boston dataset studies the effects of a range of variables on median house prices in Boston in late 70s, United States. 
 
 I will statistically analyse the dataset and make predictions with machine learning algorithms. Then, I will study the effects of each variables on the median house prices, pick a model that has the highest predictive power, and build an online interactive application by using RShiny in *section 6 - Model for Production*.
 
